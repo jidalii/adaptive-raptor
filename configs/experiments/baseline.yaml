@@ -1,0 +1,60 @@
+# Original RAPTOR baseline (real models). Costs money: SBERT runs locally, but RAPTOR
+# summaries and answers call DeepSeek. Needs DEEPSEEK_API_KEY in .env and QASPER prepared.
+#   uv run python -m adaptive_raptor.run --config configs/experiments/baseline.yaml
+# Two configs per question:
+#   raptor_original  = upstream TreeRetriever.retrieve (collapsed, top_k=10, 2000 tokens)
+#   collapsed@2000   = the same index through our strategy x budget executor
+experiment:
+  name: raptor_baseline
+  type: raptor_baseline
+  seed: 0
+  output_dir: outputs
+  description: Original RAPTOR (F-100 leaves, collapsed retrieval) on a small dev subset.
+
+dataset:
+  name: qasper
+  version: v0.3
+  split: dev
+  max_documents: 2          # start tiny; raise once costs are measured
+  sample_seed: 0
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100, overlap: 0}
+
+raptor:
+  embedding: {provider: sbert, model: sentence-transformers/multi-qa-mpnet-base-cos-v1}
+  summarization: {provider: deepseek, model: deepseek-flash}
+  summarization_length: 100
+  num_layers: 5
+  clustering: {reduction_dimension: 10, threshold: 0.1, max_length_in_cluster: 3500}
+  seeds: [224]
+  index_dir: indexes
+  cache_indexes: true
+
+retrieval:
+  include_raptor_original: true
+  raptor_original: {collapse_tree: true, top_k: 10, max_tokens: 2000}
+  strategies: [collapsed]
+  budgets: [2000]
+
+generation:
+  provider: deepseek
+  model: deepseek-flash
+  temperature: 0.0
+  max_output_tokens: 200
+  prompt_template: qasper_default
+  price_input_per_mtok: 0.15     # off-peak, user-reported; cost meter only
+  price_output_per_mtok: 0.60
+
+evaluation:
+  metrics: [answer_f1, context_tokens, latency]
+  baselines: [raptor_default]
+  output_formats: [csv, json, markdown]
+
+runtime:
+  concurrency: 4
+  max_retries: 3
+  use_cache: true
+  cache_dir: .cache
+  log_level: INFO

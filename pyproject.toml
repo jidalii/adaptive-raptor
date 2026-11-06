@@ -1,0 +1,85 @@
+[project]
+name = "adaptive-raptor"
+version = "0.1.0"
+description = "Adaptive-RAPTOR: dynamic chunking and query-aware context optimization on top of RAPTOR (CMSC 724 project)."
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = { text = "MIT" }
+authors = [
+  { name = "Jida Li" },
+  { name = "Micah McCollum" },
+  { name = "Shreyansh Sahu" },
+]
+# Upstream RAPTOR (requirements.txt) pinned 2023-era versions that no longer
+# install together on modern Python (e.g. sentence-transformers 2.2.2 needs a
+# removed huggingface_hub API; openai 1.3.3 breaks with current httpx).
+# Pins are relaxed to compatible ranges; uv.lock records the exact versions.
+dependencies = [
+  # --- upstream RAPTOR dependencies ---
+  "faiss-cpu>=1.8",
+  "numpy>=1.26,<2.0",
+  "openai>=1.40",
+  "scikit-learn>=1.4",
+  "sentence-transformers>=2.7",
+  "tenacity>=8.2",
+  "tiktoken>=0.7",
+  "torch>=2.2",
+  "transformers>=4.38",
+  "umap-learn>=0.5.5",
+  # --- adaptive-raptor additions ---
+  "pydantic>=2.6",
+  "pyyaml>=6.0",
+  "python-dotenv>=1.0",
+]
+
+[project.scripts]
+adaptive-raptor = "adaptive_raptor.run:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/raptor", "src/adaptive_raptor"]
+
+# Linux: CPU-only torch wheels (PyPI's default Linux wheels pull ~2 GB of CUDA libraries).
+# macOS uses PyPI as usual. Remove this block if you need CUDA.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -m 'not integration'"
+markers = [
+  "heavy: imports torch/sentence-transformers via the upstream raptor package",
+  "integration: needs real models or API keys; run with `-m integration` (opt-in)",
+]
+filterwarnings = [
+  "ignore::DeprecationWarning",
+  "ignore::FutureWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+# Upstream RAPTOR is vendored verbatim to keep diffs against the original
+# reviewable; it is not linted.
+extend-exclude = ["src/raptor"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]

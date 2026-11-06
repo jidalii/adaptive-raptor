@@ -1,0 +1,57 @@
+# Run-time directories are anchored to the repo root ("/data/") because the source tree has
+# packages with the same names (src/adaptive_raptor/data/, src/adaptive_raptor/models/).
+# Check a path with: git check-ignore -v <path>
+
+# Python / tooling
+__pycache__/
+*.py[cod]
+*.egg-info/
+/build/
+/dist/
+/.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+
+# Secrets: never commit API keys (.env, .env.local, prod.env, ...)
+.env
+.env.*
+*.env
+!.env.example
+
+# Data, indexes, caches, models, and run outputs (regenerable; never commit)
+/data/
+/indexes/
+/outputs/
+/.cache/
+/models/
+/checkpoints/
+*.pkl
+*.pt
+*.parquet
+*.db
+*.log
+*.tmp
+*.part
+nohup.out
+.cache
+
+# Committed on purpose (do not ignore):
+#   results/      final tables, figures, and pinned question/document id lists
+#   NOTES.md      pilot decisions and spend log
+#   uv.lock       exact dependency versions
+
+# Local tool settings
+.claude/settings.local.json
+
+# Editors / OS
+.DS_Store
+.vscode/
+.idea/
+.ipynb_checkpoints/
+*.swp
+*~

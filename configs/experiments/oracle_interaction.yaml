@@ -1,0 +1,26 @@
+# E4 (exploratory): how chunking reshapes oracle frontiers and acceptability distributions.
+experiment:
+  name: oracle_interaction
+  type: oracle_interaction
+  description: Oracle quality-cost frontiers and acceptability shares per chunking variant.
+
+dataset:
+  name: qasper
+  split: dev
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+    - {name: pic_capped, method: pic, max_tokens: 300}
+
+retrieval:
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [400, 1000, 2000]
+
+optimizer:
+  label_epsilon: 0.05
+
+evaluation:
+  metrics: [answer_f1, context_tokens]
+  oracle: {enabled: true, cross_fit: true}
+  output_formats: [csv, json, markdown]

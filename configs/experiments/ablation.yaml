@@ -1,0 +1,28 @@
+# E2: 2x2 ablation, strategy {fixed, adaptive} x budget {fixed, adaptive}.
+experiment:
+  name: ablation_strategy_budget
+  type: strategy_budget_ablation
+  description: Does strategy selection add value beyond budget adaptation?
+
+dataset:
+  name: qasper
+  split: dev
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+retrieval:
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [400, 1000, 2000]
+
+optimizer:
+  enabled: true
+  target_mean_tokens: 1000
+  fallback: {strategy: collapsed, budget: 2000}
+
+evaluation:
+  baselines: [best_fixed]
+  ablation:
+    enabled: true
+    cells: [fixed_fixed, adaptive_strategy, adaptive_budget, joint]

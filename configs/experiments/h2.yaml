@@ -1,0 +1,35 @@
+# E3 / H2: PIC-capped vs. the strongest non-PIC control (selected on dev, then frozen).
+# On the test split, chunking.primary_comparator must be set.
+experiment:
+  name: h2_chunking
+  type: h2_chunking
+  seed: 0
+  description: Cross-fitted oracle F1 at a matched budget across chunking variants.
+
+dataset:
+  name: qasper
+  split: dev
+
+chunking:
+  primary_comparator: null   # chosen on dev among f_mu / permuted / paragraph
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+    - {name: f_mu, method: fixed, chunk_size: 180}   # set to PIC-capped mean length on dev
+    - {name: pic_capped, method: pic, max_tokens: 300, summary_source: llm}
+    - {name: permuted, method: permuted_boundaries, source_variant: pic_capped, max_tokens: 300}
+    - {name: paragraph, method: paragraph, max_tokens: 300}
+
+raptor:
+  seeds: [224, 225, 226]     # seed-variance check on the pilot subset
+
+retrieval:
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [400, 1000, 2000]
+
+evaluation:
+  metrics: [answer_f1, evidence_recall, context_tokens]
+  baselines: [best_fixed]
+  matched_budget: 1000
+  oracle: {enabled: true, cross_fit: true, second_run_prompt: qasper_paraphrase}
+  equivalence_margin: 0.02
+  bootstrap_samples: 2000

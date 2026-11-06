@@ -1,0 +1,37 @@
+# Fully offline smoke run of the whole baseline pipeline: bundled synthetic QASPER-format
+# fixture, mock embeddings / summaries / answers, real upstream RAPTOR clustering and
+# retrieval. No network, no API keys, no model downloads. Results are NOT meaningful.
+#   uv run python -m adaptive_raptor.run --config configs/experiments/smoke_mock.yaml
+experiment:
+  name: smoke_mock
+  type: raptor_baseline
+  output_dir: .cache/smoke/outputs
+
+dataset:
+  name: qasper_tiny
+  split: dev
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+raptor:
+  embedding: {provider: mock, model: hash-bow}
+  summarization: {provider: mock, model: first-words}
+  index_dir: .cache/smoke/indexes
+
+retrieval:
+  include_raptor_original: true
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [400, 1000, 2000]
+
+generation:
+  provider: mock
+  model: first-words
+
+evaluation:
+  output_formats: [csv, json, markdown]
+
+runtime:
+  concurrency: 2
+  cache_dir: .cache/smoke/cache

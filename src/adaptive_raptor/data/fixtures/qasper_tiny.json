@@ -1,0 +1,377 @@
+{
+ "dev": {
+  "fixture.0001": {
+   "title": "Tiny Paper One",
+   "abstract": "This synthetic paper fixture.0001 studies a transformer model trained on a dialog corpus and reports benchmark accuracy.",
+   "full_text": [
+    {
+     "section_name": "Dataset",
+     "paragraphs": [
+      "In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 0-0. In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 0-1. In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 0-2. In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 0-3. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 0-4.",
+      "In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 1-0. In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 1-1. In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 1-2. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 1-3. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 1-4. The corpus contains 3,044 sentences in 100 dialogs.",
+      "In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 2-0. In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 2-1. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 2-2. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 2-3. In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 2-4.",
+      "In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 3-0. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 3-1. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 3-2. In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 3-3. In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 3-4.",
+      "In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 4-0. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 4-1. In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 4-2. In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 4-3. In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Model",
+     "paragraphs": [
+      "In this part of the model discussion the transformer relates to the layers and the hidden in setting 0-0. In this part of the model discussion the encoder relates to the attention and the parameters in setting 0-1. In this part of the model discussion the layers relates to the hidden and the transformer in setting 0-2. In this part of the model discussion the attention relates to the parameters and the encoder in setting 0-3. In this part of the model discussion the hidden relates to the transformer and the layers in setting 0-4.",
+      "In this part of the model discussion the encoder relates to the attention and the parameters in setting 1-0. In this part of the model discussion the layers relates to the hidden and the transformer in setting 1-1. In this part of the model discussion the attention relates to the parameters and the encoder in setting 1-2. In this part of the model discussion the hidden relates to the transformer and the layers in setting 1-3. In this part of the model discussion the parameters relates to the encoder and the attention in setting 1-4.",
+      "In this part of the model discussion the layers relates to the hidden and the transformer in setting 2-0. In this part of the model discussion the attention relates to the parameters and the encoder in setting 2-1. In this part of the model discussion the hidden relates to the transformer and the layers in setting 2-2. In this part of the model discussion the parameters relates to the encoder and the attention in setting 2-3. In this part of the model discussion the transformer relates to the layers and the hidden in setting 2-4.",
+      "In this part of the model discussion the attention relates to the parameters and the encoder in setting 3-0. In this part of the model discussion the hidden relates to the transformer and the layers in setting 3-1. In this part of the model discussion the parameters relates to the encoder and the attention in setting 3-2. In this part of the model discussion the transformer relates to the layers and the hidden in setting 3-3. In this part of the model discussion the encoder relates to the attention and the parameters in setting 3-4.",
+      "In this part of the model discussion the hidden relates to the transformer and the layers in setting 4-0. In this part of the model discussion the parameters relates to the encoder and the attention in setting 4-1. In this part of the model discussion the transformer relates to the layers and the hidden in setting 4-2. In this part of the model discussion the encoder relates to the attention and the parameters in setting 4-3. In this part of the model discussion the layers relates to the hidden and the transformer in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Training",
+     "paragraphs": [
+      "In this part of the training discussion the optimizer relates to the rate and the batch in setting 0-0. In this part of the training discussion the learning relates to the epochs and the adam in setting 0-1. In this part of the training discussion the rate relates to the batch and the optimizer in setting 0-2. In this part of the training discussion the epochs relates to the adam and the learning in setting 0-3. In this part of the training discussion the batch relates to the optimizer and the rate in setting 0-4.",
+      "In this part of the training discussion the learning relates to the epochs and the adam in setting 1-0. In this part of the training discussion the rate relates to the batch and the optimizer in setting 1-1. In this part of the training discussion the epochs relates to the adam and the learning in setting 1-2. In this part of the training discussion the batch relates to the optimizer and the rate in setting 1-3. In this part of the training discussion the adam relates to the learning and the epochs in setting 1-4.",
+      "In this part of the training discussion the rate relates to the batch and the optimizer in setting 2-0. In this part of the training discussion the epochs relates to the adam and the learning in setting 2-1. In this part of the training discussion the batch relates to the optimizer and the rate in setting 2-2. In this part of the training discussion the adam relates to the learning and the epochs in setting 2-3. In this part of the training discussion the optimizer relates to the rate and the batch in setting 2-4. We train with Adam at a learning rate of 0.001 for 20 epochs.",
+      "In this part of the training discussion the epochs relates to the adam and the learning in setting 3-0. In this part of the training discussion the batch relates to the optimizer and the rate in setting 3-1. In this part of the training discussion the adam relates to the learning and the epochs in setting 3-2. In this part of the training discussion the optimizer relates to the rate and the batch in setting 3-3. In this part of the training discussion the learning relates to the epochs and the adam in setting 3-4.",
+      "In this part of the training discussion the batch relates to the optimizer and the rate in setting 4-0. In this part of the training discussion the adam relates to the learning and the epochs in setting 4-1. In this part of the training discussion the optimizer relates to the rate and the batch in setting 4-2. In this part of the training discussion the learning relates to the epochs and the adam in setting 4-3. In this part of the training discussion the rate relates to the batch and the optimizer in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Results",
+     "paragraphs": [
+      "In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 0-0. In this part of the results discussion the baseline relates to the score and the f1 in setting 0-1. In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 0-2. In this part of the results discussion the score relates to the f1 and the baseline in setting 0-3. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 0-4.",
+      "In this part of the results discussion the baseline relates to the score and the f1 in setting 1-0. In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 1-1. In this part of the results discussion the score relates to the f1 and the baseline in setting 1-2. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 1-3. In this part of the results discussion the f1 relates to the baseline and the score in setting 1-4.",
+      "In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 2-0. In this part of the results discussion the score relates to the f1 and the baseline in setting 2-1. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 2-2. In this part of the results discussion the f1 relates to the baseline and the score in setting 2-3. In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 2-4.",
+      "In this part of the results discussion the score relates to the f1 and the baseline in setting 3-0. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 3-1. In this part of the results discussion the f1 relates to the baseline and the score in setting 3-2. In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 3-3. In this part of the results discussion the baseline relates to the score and the f1 in setting 3-4.",
+      "In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 4-0. In this part of the results discussion the f1 relates to the baseline and the score in setting 4-1. In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 4-2. In this part of the results discussion the baseline relates to the score and the f1 in setting 4-3. In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Ablation",
+     "paragraphs": [
+      "In this part of the ablation discussion the removing relates to the drop and the contribution in setting 0-0. In this part of the ablation discussion the component relates to the variant and the analysis in setting 0-1. In this part of the ablation discussion the drop relates to the contribution and the removing in setting 0-2. In this part of the ablation discussion the variant relates to the analysis and the component in setting 0-3. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 0-4.",
+      "In this part of the ablation discussion the component relates to the variant and the analysis in setting 1-0. In this part of the ablation discussion the drop relates to the contribution and the removing in setting 1-1. In this part of the ablation discussion the variant relates to the analysis and the component in setting 1-2. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 1-3. In this part of the ablation discussion the analysis relates to the component and the variant in setting 1-4.",
+      "In this part of the ablation discussion the drop relates to the contribution and the removing in setting 2-0. In this part of the ablation discussion the variant relates to the analysis and the component in setting 2-1. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 2-2. In this part of the ablation discussion the analysis relates to the component and the variant in setting 2-3. In this part of the ablation discussion the removing relates to the drop and the contribution in setting 2-4.",
+      "In this part of the ablation discussion the variant relates to the analysis and the component in setting 3-0. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 3-1. In this part of the ablation discussion the analysis relates to the component and the variant in setting 3-2. In this part of the ablation discussion the removing relates to the drop and the contribution in setting 3-3. In this part of the ablation discussion the component relates to the variant and the analysis in setting 3-4.",
+      "In this part of the ablation discussion the contribution relates to the removing and the drop in setting 4-0. In this part of the ablation discussion the analysis relates to the component and the variant in setting 4-1. In this part of the ablation discussion the removing relates to the drop and the contribution in setting 4-2. In this part of the ablation discussion the component relates to the variant and the analysis in setting 4-3. In this part of the ablation discussion the drop relates to the contribution and the removing in setting 4-4."
+     ]
+    }
+   ],
+   "qas": [
+    {
+     "question": "How many sentences are in the corpus?",
+     "question_id": "fixture.0001-q0",
+     "nlp_background": "",
+     "topic_background": "",
+     "paper_read": "",
+     "search_query": "",
+     "question_writer": "fixture",
+     "answers": [
+      {
+       "answer": {
+        "unanswerable": false,
+        "extractive_spans": [
+         "3,044 sentences in 100 dialogs"
+        ],
+        "yes_no": null,
+        "free_form_answer": "",
+        "evidence": [],
+        "highlighted_evidence": []
+       },
+       "annotation_id": "fixture.0001-q0-a0",
+       "worker_id": "w"
+      },
+      {
+       "answer": {
+        "unanswerable": false,
+        "extractive_spans": [
+         "3,044 sentences"
+        ],
+        "yes_no": null,
+        "free_form_answer": "",
+        "evidence": [],
+        "highlighted_evidence": []
+       },
+       "annotation_id": "fixture.0001-q0-a1",
+       "worker_id": "w"
+      }
+     ]
+    },
+    {
+     "question": "What learning rate is used with Adam?",
+     "question_id": "fixture.0001-q1",
+     "nlp_background": "",
+     "topic_background": "",
+     "paper_read": "",
+     "search_query": "",
+     "question_writer": "fixture",
+     "answers": [
+      {
+       "answer": {
+        "unanswerable": false,
+        "extractive_spans": [],
+        "yes_no": null,
+        "free_form_answer": "0.001 for 20 epochs",
+        "evidence": [],
+        "highlighted_evidence": []
+       },
+       "annotation_id": "fixture.0001-q1-a0",
+       "worker_id": "w"
+      }
+     ]
+    },
+    {
+     "question": "Do they use crowdworkers?",
+     "question_id": "fixture.0001-q2",
+     "nlp_background": "",
+     "topic_background": "",
+     "paper_read": "",
+     "search_query": "",
+     "question_writer": "fixture",
+     "answers": [
+      {
+       "answer": {
+        "unanswerable": false,
+        "extractive_spans": [],
+        "yes_no": true,
+        "free_form_answer": "",
+        "evidence": [],
+        "highlighted_evidence": []
+       },
+       "annotation_id": "fixture.0001-q2-a0",
+       "worker_id": "w"
+      }
+     ]
+    },
+    {
+     "question": "What GPU did they use?",
+     "question_id": "fixture.0001-q3",
+     "nlp_background": "",
+     "topic_background": "",
+     "paper_read": "",
+     "search_query": "",
+     "question_writer": "fixture",
+     "answers": [
+      {
+       "answer": {
+        "unanswerable": true,
+        "extractive_spans": [],
+        "yes_no": null,
+        "free_form_answer": "",
+        "evidence": [],
+        "highlighted_evidence": []
+       },
+       "annotation_id": "fixture.0001-q3-a0",
+       "worker_id": "w"
+      }
+     ]
+    }
+   ],
+   "figures_and_tables": []
+  },
+  "fixture.0002": {
+   "title": "Tiny Paper Two",
+   "abstract": "This synthetic paper fixture.0002 studies a transformer model trained on a dialog corpus and reports benchmark accuracy.",
+   "full_text": [
+    {
+     "section_name": "Dataset",
+     "paragraphs": [
+      "In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 0-0. In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 0-1. In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 0-2. In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 0-3. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 0-4.",
+      "In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 1-0. In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 1-1. In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 1-2. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 1-3. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 1-4.",
+      "In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 2-0. In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 2-1. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 2-2. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 2-3. In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 2-4.",
+      "In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 3-0. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 3-1. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 3-2. In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 3-3. In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 3-4.",
+      "In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 4-0. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 4-1. In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 4-2. In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 4-3. In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Model",
+     "paragraphs": [
+      "In this part of the model discussion the transformer relates to the layers and the hidden in setting 0-0. In this part of the model discussion the encoder relates to the attention and the parameters in setting 0-1. In this part of the model discussion the layers relates to the hidden and the transformer in setting 0-2. In this part of the model discussion the attention relates to the parameters and the encoder in setting 0-3. In this part of the model discussion the hidden relates to the transformer and the layers in setting 0-4.",
+      "In this part of the model discussion the encoder relates to the attention and the parameters in setting 1-0. In this part of the model discussion the layers relates to the hidden and the transformer in setting 1-1. In this part of the model discussion the attention relates to the parameters and the encoder in setting 1-2. In this part of the model discussion the hidden relates to the transformer and the layers in setting 1-3. In this part of the model discussion the parameters relates to the encoder and the attention in setting 1-4.",
+      "In this part of the model discussion the layers relates to the hidden and the transformer in setting 2-0. In this part of the model discussion the attention relates to the parameters and the encoder in setting 2-1. In this part of the model discussion the hidden relates to the transformer and the layers in setting 2-2. In this part of the model discussion the parameters relates to the encoder and the attention in setting 2-3. In this part of the model discussion the transformer relates to the layers and the hidden in setting 2-4.",
+      "In this part of the model discussion the attention relates to the parameters and the encoder in setting 3-0. In this part of the model discussion the hidden relates to the transformer and the layers in setting 3-1. In this part of the model discussion the parameters relates to the encoder and the attention in setting 3-2. In this part of the model discussion the transformer relates to the layers and the hidden in setting 3-3. In this part of the model discussion the encoder relates to the attention and the parameters in setting 3-4. The encoder has 12 layers with 768 hidden units.",
+      "In this part of the model discussion the hidden relates to the transformer and the layers in setting 4-0. In this part of the model discussion the parameters relates to the encoder and the attention in setting 4-1. In this part of the model discussion the transformer relates to the layers and the hidden in setting 4-2. In this part of the model discussion the encoder relates to the attention and the parameters in setting 4-3. In this part of the model discussion the layers relates to the hidden and the transformer in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Training",
+     "paragraphs": [
+      "In this part of the training discussion the optimizer relates to the rate and the batch in setting 0-0. In this part of the training discussion the learning relates to the epochs and the adam in setting 0-1. In this part of the training discussion the rate relates to the batch and the optimizer in setting 0-2. In this part of the training discussion the epochs relates to the adam and the learning in setting 0-3. In this part of the training discussion the batch relates to the optimizer and the rate in setting 0-4.",
+      "In this part of the training discussion the learning relates to the epochs and the adam in setting 1-0. In this part of the training discussion the rate relates to the batch and the optimizer in setting 1-1. In this part of the training discussion the epochs relates to the adam and the learning in setting 1-2. In this part of the training discussion the batch relates to the optimizer and the rate in setting 1-3. In this part of the training discussion the adam relates to the learning and the epochs in setting 1-4.",
+      "In this part of the training discussion the rate relates to the batch and the optimizer in setting 2-0. In this part of the training discussion the epochs relates to the adam and the learning in setting 2-1. In this part of the training discussion the batch relates to the optimizer and the rate in setting 2-2. In this part of the training discussion the adam relates to the learning and the epochs in setting 2-3. In this part of the training discussion the optimizer relates to the rate and the batch in setting 2-4.",
+      "In this part of the training discussion the epochs relates to the adam and the learning in setting 3-0. In this part of the training discussion the batch relates to the optimizer and the rate in setting 3-1. In this part of the training discussion the adam relates to the learning and the epochs in setting 3-2. In this part of the training discussion the optimizer relates to the rate and the batch in setting 3-3. In this part of the training discussion the learning relates to the epochs and the adam in setting 3-4.",
+      "In this part of the training discussion the batch relates to the optimizer and the rate in setting 4-0. In this part of the training discussion the adam relates to the learning and the epochs in setting 4-1. In this part of the training discussion the optimizer relates to the rate and the batch in setting 4-2. In this part of the training discussion the learning relates to the epochs and the adam in setting 4-3. In this part of the training discussion the rate relates to the batch and the optimizer in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Results",
+     "paragraphs": [
+      "In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 0-0. In this part of the results discussion the baseline relates to the score and the f1 in setting 0-1. In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 0-2. In this part of the results discussion the score relates to the f1 and the baseline in setting 0-3. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 0-4. The model improves accuracy by 4.2 points over the baseline.",
+      "In this part of the results discussion the baseline relates to the score and the f1 in setting 1-0. In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 1-1. In this part of the results discussion the score relates to the f1 and the baseline in setting 1-2. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 1-3. In this part of the results discussion the f1 relates to the baseline and the score in setting 1-4.",
+      "In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 2-0. In this part of the results discussion the score relates to the f1 and the baseline in setting 2-1. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 2-2. In this part of the results discussion the f1 relates to the baseline and the score in setting 2-3. In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 2-4.",
+      "In this part of the results discussion the score relates to the f1 and the baseline in setting 3-0. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 3-1. In this part of the results discussion the f1 relates to the baseline and the score in setting 3-2. In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 3-3. In this part of the results discussion the baseline relates to the score and the f1 in setting 3-4.",
+      "In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 4-0. In this part of the results discussion the f1 relates to the baseline and the score in setting 4-1. In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 4-2. In this part of the results discussion the baseline relates to the score and the f1 in setting 4-3. In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Ablation",
+     "paragraphs": [
+      "In this part of the ablation discussion the removing relates to the drop and the contribution in setting 0-0. In this part of the ablation discussion the component relates to the variant and the analysis in setting 0-1. In this part of the ablation discussion the drop relates to the contribution and the removing in setting 0-2. In this part of the ablation discussion the variant relates to the analysis and the component in setting 0-3. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 0-4.",
+      "In this part of the ablation discussion the component relates to the variant and the analysis in setting 1-0. In this part of the ablation discussion the drop relates to the contribution and the removing in setting 1-1. In this part of the ablation discussion the variant relates to the analysis and the component in setting 1-2. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 1-3. In this part of the ablation discussion the analysis relates to the component and the variant in setting 1-4.",
+      "In this part of the ablation discussion the drop relates to the contribution and the removing in setting 2-0. In this part of the ablation discussion the variant relates to the analysis and the component in setting 2-1. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 2-2. In this part of the ablation discussion the analysis relates to the component and the variant in setting 2-3. In this part of the ablation discussion the removing relates to the drop and the contribution in setting 2-4.",
+      "In this part of the ablation discussion the variant relates to the analysis and the component in setting 3-0. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 3-1. In this part of the ablation discussion the analysis relates to the component and the variant in setting 3-2. In this part of the ablation discussion the removing relates to the drop and the contribution in setting 3-3. In this part of the ablation discussion the component relates to the variant and the analysis in setting 3-4.",
+      "In this part of the ablation discussion the contribution relates to the removing and the drop in setting 4-0. In this part of the ablation discussion the analysis relates to the component and the variant in setting 4-1. In this part of the ablation discussion the removing relates to the drop and the contribution in setting 4-2. In this part of the ablation discussion the component relates to the variant and the analysis in setting 4-3. In this part of the ablation discussion the drop relates to the contribution and the removing in setting 4-4."
+     ]
+    }
+   ],
+   "qas": [
+    {
+     "question": "How many encoder layers does the model have?",
+     "question_id": "fixture.0002-q0",
+     "nlp_background": "",
+     "topic_background": "",
+     "paper_read": "",
+     "search_query": "",
+     "question_writer": "fixture",
+     "answers": [
+      {
+       "answer": {
+        "unanswerable": false,
+        "extractive_spans": [
+         "12 layers"
+        ],
+        "yes_no": null,
+        "free_form_answer": "",
+        "evidence": [],
+        "highlighted_evidence": []
+       },
+       "annotation_id": "fixture.0002-q0-a0",
+       "worker_id": "w"
+      }
+     ]
+    },
+    {
+     "question": "Does the model beat the baseline?",
+     "question_id": "fixture.0002-q1",
+     "nlp_background": "",
+     "topic_background": "",
+     "paper_read": "",
+     "search_query": "",
+     "question_writer": "fixture",
+     "answers": [
+      {
+       "answer": {
+        "unanswerable": false,
+        "extractive_spans": [],
+        "yes_no": true,
+        "free_form_answer": "",
+        "evidence": [],
+        "highlighted_evidence": []
+       },
+       "annotation_id": "fixture.0002-q1-a0",
+       "worker_id": "w"
+      },
+      {
+       "answer": {
+        "unanswerable": false,
+        "extractive_spans": [],
+        "yes_no": false,
+        "free_form_answer": "",
+        "evidence": [],
+        "highlighted_evidence": []
+       },
+       "annotation_id": "fixture.0002-q1-a1",
+       "worker_id": "w"
+      }
+     ]
+    }
+   ],
+   "figures_and_tables": []
+  }
+ },
+ "test": {
+  "fixture.0003": {
+   "title": "Tiny Paper Three",
+   "abstract": "This synthetic paper fixture.0003 studies a transformer model trained on a dialog corpus and reports benchmark accuracy.",
+   "full_text": [
+    {
+     "section_name": "Dataset",
+     "paragraphs": [
+      "In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 0-0. In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 0-1. In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 0-2. In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 0-3. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 0-4.",
+      "In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 1-0. In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 1-1. In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 1-2. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 1-3. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 1-4.",
+      "In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 2-0. In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 2-1. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 2-2. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 2-3. In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 2-4.",
+      "In this part of the dataset discussion the collected relates to the sentences and the annotators in setting 3-0. In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 3-1. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 3-2. In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 3-3. In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 3-4.",
+      "In this part of the dataset discussion the crowdworkers relates to the corpus and the dialogs in setting 4-0. In this part of the dataset discussion the sentences relates to the annotators and the collected in setting 4-1. In this part of the dataset discussion the corpus relates to the dialogs and the crowdworkers in setting 4-2. In this part of the dataset discussion the annotators relates to the collected and the sentences in setting 4-3. In this part of the dataset discussion the dialogs relates to the crowdworkers and the corpus in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Model",
+     "paragraphs": [
+      "In this part of the model discussion the transformer relates to the layers and the hidden in setting 0-0. In this part of the model discussion the encoder relates to the attention and the parameters in setting 0-1. In this part of the model discussion the layers relates to the hidden and the transformer in setting 0-2. In this part of the model discussion the attention relates to the parameters and the encoder in setting 0-3. In this part of the model discussion the hidden relates to the transformer and the layers in setting 0-4.",
+      "In this part of the model discussion the encoder relates to the attention and the parameters in setting 1-0. In this part of the model discussion the layers relates to the hidden and the transformer in setting 1-1. In this part of the model discussion the attention relates to the parameters and the encoder in setting 1-2. In this part of the model discussion the hidden relates to the transformer and the layers in setting 1-3. In this part of the model discussion the parameters relates to the encoder and the attention in setting 1-4.",
+      "In this part of the model discussion the layers relates to the hidden and the transformer in setting 2-0. In this part of the model discussion the attention relates to the parameters and the encoder in setting 2-1. In this part of the model discussion the hidden relates to the transformer and the layers in setting 2-2. In this part of the model discussion the parameters relates to the encoder and the attention in setting 2-3. In this part of the model discussion the transformer relates to the layers and the hidden in setting 2-4.",
+      "In this part of the model discussion the attention relates to the parameters and the encoder in setting 3-0. In this part of the model discussion the hidden relates to the transformer and the layers in setting 3-1. In this part of the model discussion the parameters relates to the encoder and the attention in setting 3-2. In this part of the model discussion the transformer relates to the layers and the hidden in setting 3-3. In this part of the model discussion the encoder relates to the attention and the parameters in setting 3-4.",
+      "In this part of the model discussion the hidden relates to the transformer and the layers in setting 4-0. In this part of the model discussion the parameters relates to the encoder and the attention in setting 4-1. In this part of the model discussion the transformer relates to the layers and the hidden in setting 4-2. In this part of the model discussion the encoder relates to the attention and the parameters in setting 4-3. In this part of the model discussion the layers relates to the hidden and the transformer in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Training",
+     "paragraphs": [
+      "In this part of the training discussion the optimizer relates to the rate and the batch in setting 0-0. In this part of the training discussion the learning relates to the epochs and the adam in setting 0-1. In this part of the training discussion the rate relates to the batch and the optimizer in setting 0-2. In this part of the training discussion the epochs relates to the adam and the learning in setting 0-3. In this part of the training discussion the batch relates to the optimizer and the rate in setting 0-4.",
+      "In this part of the training discussion the learning relates to the epochs and the adam in setting 1-0. In this part of the training discussion the rate relates to the batch and the optimizer in setting 1-1. In this part of the training discussion the epochs relates to the adam and the learning in setting 1-2. In this part of the training discussion the batch relates to the optimizer and the rate in setting 1-3. In this part of the training discussion the adam relates to the learning and the epochs in setting 1-4.",
+      "In this part of the training discussion the rate relates to the batch and the optimizer in setting 2-0. In this part of the training discussion the epochs relates to the adam and the learning in setting 2-1. In this part of the training discussion the batch relates to the optimizer and the rate in setting 2-2. In this part of the training discussion the adam relates to the learning and the epochs in setting 2-3. In this part of the training discussion the optimizer relates to the rate and the batch in setting 2-4.",
+      "In this part of the training discussion the epochs relates to the adam and the learning in setting 3-0. In this part of the training discussion the batch relates to the optimizer and the rate in setting 3-1. In this part of the training discussion the adam relates to the learning and the epochs in setting 3-2. In this part of the training discussion the optimizer relates to the rate and the batch in setting 3-3. In this part of the training discussion the learning relates to the epochs and the adam in setting 3-4.",
+      "In this part of the training discussion the batch relates to the optimizer and the rate in setting 4-0. In this part of the training discussion the adam relates to the learning and the epochs in setting 4-1. In this part of the training discussion the optimizer relates to the rate and the batch in setting 4-2. In this part of the training discussion the learning relates to the epochs and the adam in setting 4-3. In this part of the training discussion the rate relates to the batch and the optimizer in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Results",
+     "paragraphs": [
+      "In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 0-0. In this part of the results discussion the baseline relates to the score and the f1 in setting 0-1. In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 0-2. In this part of the results discussion the score relates to the f1 and the baseline in setting 0-3. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 0-4.",
+      "In this part of the results discussion the baseline relates to the score and the f1 in setting 1-0. In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 1-1. In this part of the results discussion the score relates to the f1 and the baseline in setting 1-2. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 1-3. In this part of the results discussion the f1 relates to the baseline and the score in setting 1-4.",
+      "In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 2-0. In this part of the results discussion the score relates to the f1 and the baseline in setting 2-1. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 2-2. In this part of the results discussion the f1 relates to the baseline and the score in setting 2-3. In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 2-4.",
+      "In this part of the results discussion the score relates to the f1 and the baseline in setting 3-0. In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 3-1. In this part of the results discussion the f1 relates to the baseline and the score in setting 3-2. In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 3-3. In this part of the results discussion the baseline relates to the score and the f1 in setting 3-4.",
+      "In this part of the results discussion the benchmark relates to the accuracy and the improvement in setting 4-0. In this part of the results discussion the f1 relates to the baseline and the score in setting 4-1. In this part of the results discussion the accuracy relates to the improvement and the benchmark in setting 4-2. In this part of the results discussion the baseline relates to the score and the f1 in setting 4-3. In this part of the results discussion the improvement relates to the benchmark and the accuracy in setting 4-4."
+     ]
+    },
+    {
+     "section_name": "Ablation",
+     "paragraphs": [
+      "In this part of the ablation discussion the removing relates to the drop and the contribution in setting 0-0. In this part of the ablation discussion the component relates to the variant and the analysis in setting 0-1. In this part of the ablation discussion the drop relates to the contribution and the removing in setting 0-2. In this part of the ablation discussion the variant relates to the analysis and the component in setting 0-3. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 0-4.",
+      "In this part of the ablation discussion the component relates to the variant and the analysis in setting 1-0. In this part of the ablation discussion the drop relates to the contribution and the removing in setting 1-1. In this part of the ablation discussion the variant relates to the analysis and the component in setting 1-2. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 1-3. In this part of the ablation discussion the analysis relates to the component and the variant in setting 1-4.",
+      "In this part of the ablation discussion the drop relates to the contribution and the removing in setting 2-0. In this part of the ablation discussion the variant relates to the analysis and the component in setting 2-1. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 2-2. In this part of the ablation discussion the analysis relates to the component and the variant in setting 2-3. In this part of the ablation discussion the removing relates to the drop and the contribution in setting 2-4. Removing the attention component causes the largest drop.",
+      "In this part of the ablation discussion the variant relates to the analysis and the component in setting 3-0. In this part of the ablation discussion the contribution relates to the removing and the drop in setting 3-1. In this part of the ablation discussion the analysis relates to the component and the variant in setting 3-2. In this part of the ablation discussion the removing relates to the drop and the contribution in setting 3-3. In this part of the ablation discussion the component relates to the variant and the analysis in setting 3-4.",
+      "In this part of the ablation discussion the contribution relates to the removing and the drop in setting 4-0. In this part of the ablation discussion the analysis relates to the component and the variant in setting 4-1. In this part of the ablation discussion the removing relates to the drop and the contribution in setting 4-2. In this part of the ablation discussion the component relates to the variant and the analysis in setting 4-3. In this part of the ablation discussion the drop relates to the contribution and the removing in setting 4-4."
+     ]
+    }
+   ],
+   "qas": [
+    {
+     "question": "Which component matters most in the ablation?",
+     "question_id": "fixture.0003-q0",
+     "nlp_background": "",
+     "topic_background": "",
+     "paper_read": "",
+     "search_query": "",
+     "question_writer": "fixture",
+     "answers": [
+      {
+       "answer": {
+        "unanswerable": false,
+        "extractive_spans": [
+         "attention component"
+        ],
+        "yes_no": null,
+        "free_form_answer": "",
+        "evidence": [],
+        "highlighted_evidence": []
+       },
+       "annotation_id": "fixture.0003-q0-a0",
+       "worker_id": "w"
+      }
+     ]
+    }
+   ],
+   "figures_and_tables": []
+  }
+ },
+ "train": {}
+}

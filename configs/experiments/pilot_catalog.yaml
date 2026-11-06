@@ -1,0 +1,28 @@
+# E0 pilot / label collection: the full 3 x 3 catalog on the pilot documents (real models).
+# Make the pilot id list first:
+#   ./scripts/download_datasets.sh --dataset qasper --make-subset pilot --split dev --n-docs 30 --seed 0
+# Run B (cross-fitting): --set experiment.run_label=B --set generation.prompt_template=qasper_paraphrase
+experiment:
+  name: pilot_catalog
+  type: raptor_baseline
+  run_label: A
+
+dataset:
+  name: qasper
+  split: dev
+  doc_ids_file: data/subsets/qasper/v0.3/dev_pilot.txt
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+retrieval:
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [400, 1000, 2000]
+
+generation:
+  price_input_per_mtok: 0.15
+  price_output_per_mtok: 0.60
+
+evaluation:
+  output_formats: [csv, json, markdown]
