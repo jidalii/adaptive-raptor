@@ -15,6 +15,7 @@ Layout (under the data root, see adaptive_raptor.paths):
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import shutil
@@ -253,10 +254,8 @@ def verify_qasper(root: Path | None = None) -> list[str]:
                 break
     ids = {}
     for split in src["expected"]:
-        try:
+        with contextlib.suppress(FileNotFoundError):
             ids[split] = {d.doc_id for d in qasper.load_processed(pdir, split)[0]}
-        except FileNotFoundError:
-            pass
     for a in ids:
         for b in ids:
             if a < b and ids[a] & ids[b]:

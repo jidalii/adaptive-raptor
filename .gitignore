@@ -24,7 +24,8 @@ htmlcov/
 !.env.example
 
 # Data, indexes, caches, models, and run outputs (regenerable; never commit)
-/data/
+/data/*
+!/data/subsets/
 /indexes/
 /outputs/
 /logs/
@@ -43,6 +44,7 @@ nohup.out
 
 # Committed on purpose (do not ignore):
 #   results/      final tables, figures, and pinned question/document id lists
+#   data/subsets/ pinned document id lists that configs read (doc_ids_file)
 #   NOTES.md      pilot decisions and spend log
 #   uv.lock       exact dependency versions
 

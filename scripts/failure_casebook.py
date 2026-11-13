@@ -93,7 +93,8 @@ def replay_router(run: Path, s: Split) -> dict[str, str]:
 
 def node_texts(tree, ids, levels):
     return [
-        {"node": i, "layer": lv, "text": tree.all_nodes[i].text} for i, lv in zip(ids, levels)
+        {"node": i, "layer": lv, "text": tree.all_nodes[i].text}
+        for i, lv in zip(ids, levels, strict=True)
     ]
 
 
@@ -172,8 +173,7 @@ def qasper_cases() -> tuple[list[dict], dict]:
             for n, ch in systems.items()
         },
         "mean_score": {
-            n: round(sum(s.f1[q][ch[q]] for q in s.qs) / len(s.qs), 4)
-            for n, ch in systems.items()
+            n: round(sum(s.f1[q][ch[q]] for q in s.qs) / len(s.qs), 4) for n, ch in systems.items()
         },
         "pairs": [("adaptive_rules", "raptor_original"), ("raptor_paper", "leaf@1000")],
     }
@@ -302,7 +302,8 @@ def render(name: str, cases: list[dict], meta: dict, k: int, rng: random.Random)
 
             md.append(
                 f"| {cat} | {len(cs)} | {rate('answer_in_context', a)} | "
-                f"{rate('answer_in_context', b)} | {rate('abstained', a)} | {rate('abstained', b)} |"
+                f"{rate('answer_in_context', b)} | {rate('abstained', a)} | "
+                f"{rate('abstained', b)} |"
             )
         md.append("")
         for cat in sorted(cats):
