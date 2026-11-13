@@ -55,18 +55,40 @@ def preflight(config: ExperimentConfig) -> None:
     for env, ok in credential_status(config).items():
         if not ok:
             problems.append(f"{env} is not set (needed for {purposes[env]}); add it to .env")
-    if config.dataset.name == "qasper":
+    if config.dataset.name in ("qasper", "narrativeqa"):
         from adaptive_raptor.data.qasper import processed_split_paths
         from adaptive_raptor.paths import processed_dir
 
-        pdir = processed_dir("qasper", config.dataset.version, config.dataset.path)
+        name = config.dataset.name
+        pdir = processed_dir(name, config.dataset.version, config.dataset.path)
         if not all(p.is_file() for p in processed_split_paths(pdir, config.dataset.split)):
             problems.append(
-                f"QASPER {config.dataset.version} is not prepared under {pdir}; run "
-                "./scripts/download_datasets.sh --dataset qasper"
+                f"{name} {config.dataset.version} is not prepared under {pdir}; run "
+                f"./scripts/download_datasets.sh --dataset {name}"
             )
     if problems:
         raise PreflightError("environment is not ready for this run", problems)
+
+
+LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
+LOG_DATEFMT = "%Y-%m-%d %H:%M:%SZ"  # UTC, like run ids
+
+
+class UTCFormatter(logging.Formatter):
+    converter = time.gmtime
+
+
+def log_dir_for(config: ExperimentConfig) -> Path:
+    return config.runtime.log_dir or config.experiment.output_dir.parent / "logs"
+
+
+def attach_log_file(path: Path) -> logging.Handler:
+    """Copy everything the console shows into ``path`` (same format, with timestamps)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handler = logging.FileHandler(path, encoding="utf-8")
+    handler.setFormatter(UTCFormatter(LOG_FORMAT, LOG_DATEFMT))
+    logging.getLogger().addHandler(handler)
+    return handler
 
 
 def seed_everything(seed: int) -> None:
@@ -82,16 +104,36 @@ def run_experiment(
 ) -> tuple[ExperimentResult, Path]:
     overrides = overrides or []
     report = check(config)
-    for w in report.warnings:
-        log.warning("config warning: %s", w)
     cls = get_experiment_class(config.experiment.type)
     if cls.requires_credentials:
         preflight(config)
 
     run_dir = make_run_dir(config)
+    log_file = log_dir_for(config) / f"{config.experiment.name}_{run_dir.name}.log"
+    handler = attach_log_file(log_file)
+    try:
+        return _run_in_dir(config, cls, run_dir, log_file, report, source, overrides)
+    finally:
+        logging.getLogger().removeHandler(handler)
+        handler.close()
+
+
+def _run_in_dir(
+    config: ExperimentConfig,
+    cls: type,
+    run_dir: Path,
+    log_file: Path,
+    report: ValidationReport,
+    source: Path | None,
+    overrides: list[str],
+) -> tuple[ExperimentResult, Path]:
+    log.info("run %s started: config=%s log=%s", run_dir, source, log_file)
+    for w in report.warnings:
+        log.warning("config warning: %s", w)
     save_resolved_config(config, run_dir, source)
     meta = run_metadata(config, source, overrides)
     meta["warnings"] = report.warnings
+    meta["log_file"] = str(log_file)
     write_json(run_dir / "run_metadata.json", meta)
 
     seed_everything(config.experiment.seed)
@@ -113,4 +155,11 @@ def run_experiment(
     status["duration_s"] = round(time.perf_counter() - t0, 3)
     status["finished_at"] = datetime.now(UTC).isoformat()
     write_json(run_dir / "status.json", status)
+    log.info(
+        "run finished: status=%s (%s) in %.1fs; outputs: %s",
+        result.status.value,
+        result.message,
+        status["duration_s"],
+        run_dir,
+    )
     return result, run_dir

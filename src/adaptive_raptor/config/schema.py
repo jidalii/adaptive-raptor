@@ -36,6 +36,8 @@ class ExperimentType(StrEnum):
     H2_CHUNKING = "h2_chunking"
     STRATEGY_BUDGET_ABLATION = "strategy_budget_ablation"
     ORACLE_INTERACTION = "oracle_interaction"
+    QUERY_PROFILING = "query_profiling"
+    ROUTER_TRAIN = "router_train"
 
 
 class ExperimentSection(StrictModel):
@@ -53,7 +55,7 @@ class ExperimentSection(StrictModel):
 
 
 class DatasetSection(StrictModel):
-    name: Literal["qasper", "qasper_tiny", "quality"] = Field(
+    name: Literal["qasper", "qasper_tiny", "quality", "narrativeqa"] = Field(
         default="qasper",
         description="'qasper_tiny' is a bundled offline fixture for smoke tests (not for results).",
     )
@@ -202,7 +204,17 @@ class RaptorSection(StrictModel):
     summarization: ModelRef = Field(
         default_factory=lambda: ModelRef(provider="deepseek", model="deepseek-flash")
     )
-    summarization_length: PositiveInt = 100
+    summarization_length: PositiveInt = Field(
+        default=200,
+        description="Max output tokens per RAPTOR summary node (upstream default 100; "
+        "T08 decision 2026-11-09: 200).",
+    )
+    summarization_prompt: str = Field(
+        default="upstream",
+        description="Summary prompt: 'upstream' (verbatim upstream RAPTOR prompt) or a named "
+        "override in models/summarization.py SUMMARY_PROMPTS. Only the prompt text changes; "
+        "the RAPTOR algorithm and summarization_length (max output tokens) are unchanged.",
+    )
     num_layers: PositiveInt = 5
     tokenizer: Literal["cl100k_base"] = "cl100k_base"
     deterministic_umap: bool = Field(
@@ -285,16 +297,94 @@ class RetrievalSection(StrictModel):
 # --------------------------------------------------------------------------- optimizer
 
 
+class ProfilerSection(StrictModel):
+    """LLM query profiler (Plan A, docs/OPTIMIZER_PLAN.md WP2). Sees no answers or evidence."""
+
+    provider: Literal["deepseek", "openai", "mock"] = "deepseek"
+    model: str = "deepseek-flash"
+    prompt: str = Field(
+        default="profile_v3",
+        description="Built-in prompt name or file path. profile_v3 is frozen (2026-11-09): "
+        "changing it changes prompt_hash, so stored profiles and checkpoints won't mix.",
+    )
+    inputs: list[Literal["question", "title", "abstract"]] = Field(
+        default_factory=lambda: ["question", "title"], min_length=1
+    )
+    temperature: float = Field(default=0.0, ge=0, le=2)
+    max_output_tokens: PositiveInt = 80
+    json_mode: bool = True
+    use_logprobs: bool = Field(
+        default=False,
+        description="Request logprobs for a confidence score. DeepSeek returns them after "
+        "temperature, so at temperature 0 they carry no signal (all 0.0).",
+    )
+    confidence_threshold: float | None = Field(
+        default=None,
+        ge=0,
+        le=1,
+        description="Route to the fallback below this; None = off. "
+        "Inactive when no confidence is available.",
+    )
+    profiles_path: list[Path] = Field(
+        default_factory=list, description="profiles.jsonl files from query_profiling runs."
+    )
+    api_key_env: str | None = None
+    base_url_env: str | None = None
+    request_timeout_s: float = Field(default=60.0, gt=0)
+
+    @model_validator(mode="after")
+    def _question_required(self) -> ProfilerSection:
+        if "question" not in self.inputs:
+            raise ValueError("profiler.inputs must include 'question'")
+        return self
+
+
+LLM_MODEL_TYPES = ("llm_profile_table", "llm_profile_rules")
+
+
 class OptimizerSection(StrictModel):
     enabled: bool = False
-    model_type: Literal["logistic_regression", "ordinal_min_budget"] = "logistic_regression"
-    features: list[Literal["query_embedding", "lexical"]] = Field(
-        default_factory=lambda: ["query_embedding", "lexical"], min_length=1
+    model_type: Literal[
+        "llm_profile_table", "llm_profile_rules", "logistic_regression", "ordinal_min_budget"
+    ] = Field(
+        default="llm_profile_table",
+        description="Plan A: llm_profile_table (primary), llm_profile_rules (ablation). "
+        "logistic_regression / ordinal_min_budget are Plan B, built only if Plan A fails.",
     )
-    pca_dim: PositiveInt | None = 32
+    features: list[Literal["llm_profile", "query_embedding", "lexical"]] = Field(
+        default_factory=lambda: ["llm_profile"], min_length=1
+    )
+    pca_dim: PositiveInt | None = None
+    profiler: ProfilerSection = Field(default_factory=ProfilerSection)
+    table_alpha: float = Field(
+        default=5.0, gt=0, description="Prior strength for hierarchical Beta smoothing."
+    )
+    cost_includes_profiler: bool = Field(
+        default=True, description="Count profiler input tokens in routing cost (H1 primary)."
+    )
+    train_labels: list[Path] = Field(
+        default_factory=list, description="labels.jsonl files on the train split (catalog runs)."
+    )
+    dev_labels: list[Path] = Field(
+        default_factory=list, description="labels.jsonl files on dev, for calibration."
+    )
+    label_run: str = Field(default="A", description="Which run's labels train and calibrate.")
+    target_config: str | None = Field(
+        default=None,
+        description="Calibrate theta so the router's dev mean total cost (incl. profiler) "
+        "equals this fixed config's dev mean total cost, e.g. collapsed@1000.",
+    )
+    eval_labels: list[Path] = Field(
+        default_factory=list,
+        description="h1_optimizer: labels.jsonl of the evaluated split (all catalog configs).",
+    )
+    ablation_checkpoints: list[Path] = Field(
+        default_factory=list,
+        description="h1_optimizer: extra frozen routers to compare (e.g. the A2 rules router).",
+    )
     regularization_c: float = Field(default=1.0, gt=0)
     label_epsilon: float = Field(
-        default=0.05, ge=0, le=1, description="Acceptable if F1 >= per-query best F1 - epsilon."
+        default=0.02, ge=0, le=1, description="Acceptable if F1 >= per-query best F1 - epsilon."
     )
     theta: float | None = Field(
         default=None, ge=0, le=1, description="Fixed acceptability threshold; None = calibrate."
@@ -311,7 +401,13 @@ class OptimizerSection(StrictModel):
     def _pca_needs_embedding(self) -> OptimizerSection:
         if self.pca_dim is not None and "query_embedding" not in self.features:
             raise ValueError("pca_dim is set but 'query_embedding' is not in features")
+        if self.model_type in LLM_MODEL_TYPES and "llm_profile" not in self.features:
+            raise ValueError(f"model_type {self.model_type} needs 'llm_profile' in features")
         return self
+
+    @property
+    def uses_profiler(self) -> bool:
+        return "llm_profile" in self.features
 
 
 # --------------------------------------------------------------------------- generation
@@ -367,7 +463,13 @@ class EvaluationSection(StrictModel):
     baselines: list[Literal["best_fixed", "raptor_default", "full_collapsed_max_budget"]] = Field(
         default_factory=lambda: ["best_fixed", "raptor_default"]
     )
-    budget_matching: Literal["conservative_at_least", "interpolate"] = "conservative_at_least"
+    budget_matching: Literal[
+        "best_within_budget", "nearest_higher", "conservative_at_least", "interpolate"
+    ] = Field(
+        default="best_within_budget",
+        description="Primary comparator rule. best_within_budget: highest dev F1 among fixed "
+        "configs within the router's dev total cost; nearest_higher is the sensitivity rule.",
+    )
     matched_budget: PositiveInt | None = Field(
         default=None, description="H2: pre-set budget at which oracle F1 is compared."
     )
@@ -395,6 +497,11 @@ class RuntimeSection(StrictModel):
     use_cache: bool = True
     cache_dir: Path = Path(".cache")
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    log_dir: Path | None = Field(
+        default=None,
+        description="Folder for per-run log files (<experiment.name>_<run id>.log). "
+        "Default: a 'logs' folder next to experiment.output_dir.",
+    )
 
 
 # --------------------------------------------------------------------------- root

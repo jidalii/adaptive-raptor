@@ -1,0 +1,34 @@
+# Profile every question of a split once with the LLM profiler (Plan A, docs/OPTIMIZER_PLAN.md).
+# Costs money (DeepSeek) unless optimizer.profiler.provider is mock; responses are cached in
+# <cache_dir>/profiles, so reruns are free. Run per split, e.g.:
+#   uv run python -m adaptive_raptor.run --config configs/experiments/profile_queries.yaml \
+#       --set dataset.split=dev --set dataset.doc_ids_file=data/subsets/qasper/v0.3/dev_pilot.txt
+# Output: outputs/profile_queries/<run>/profiles.jsonl (+ statistics in status.json).
+experiment:
+  name: profile_queries
+  type: query_profiling
+  seed: 0
+
+dataset:
+  name: qasper
+  split: dev
+  doc_ids_file: data/subsets/qasper/v0.3/dev_pilot.txt
+
+optimizer:
+  features: [llm_profile]
+  profiler:
+    provider: deepseek
+    model: deepseek-flash
+    prompt: profile_v3               # frozen 2026-11-09 (prompt_hash e22d6935b289c85d)
+    inputs: [question, title]
+    max_output_tokens: 80
+    json_mode: true
+    use_logprobs: false             # post-temperature logprobs carry no signal at t=0
+    confidence_threshold: null       # decision (a): no confidence signal; invalid -> fallback
+
+generation:                       # used only for the cost meter (same model and prices)
+  price_input_per_mtok: 0.15
+  price_output_per_mtok: 0.60
+
+runtime:
+  concurrency: 4

@@ -1,0 +1,48 @@
+# Train the Plan A router on train labels, calibrate theta on dev, replay on dev (offline;
+# no API calls). Fill in the label tables from catalog runs (pilot_catalog-style runs on
+# train and dev) and the profiles from query_profiling runs, then:
+#   uv run python -m adaptive_raptor.run --config configs/experiments/router_train.yaml
+# Output: router/checkpoint.json (frozen in T12), dev_report.json (go/no-go), theta_sweep.*
+experiment:
+  name: router_train
+  type: router_train
+  seed: 0
+
+dataset:
+  name: qasper
+  split: dev
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+retrieval:
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [400, 1000, 2000]
+
+optimizer:
+  enabled: true
+  model_type: llm_profile_table       # or llm_profile_rules (A2 ablation)
+  features: [llm_profile]
+  table_alpha: 5.0
+  label_epsilon: 0.02                 # T08 decision
+  label_run: A
+  target_config: collapsed@1000        # theta: router dev total cost (gen in+out + profiler) = this config's
+  cost_includes_profiler: true
+  fallback: {strategy: collapsed, budget: 2000}
+  train_labels: []                    # e.g. [outputs/catalog_train/<run>/labels.jsonl]
+  dev_labels: []                      # e.g. [outputs/pilot_catalog/<run>/labels.jsonl]
+  profiler:
+    provider: deepseek
+    model: deepseek-flash
+    prompt: profile_v3               # frozen 2026-11-09 (prompt_hash e22d6935b289c85d)
+    inputs: [question, title]
+    confidence_threshold: null       # decision (a): no confidence signal; invalid -> fallback
+    profiles_path: []                 # profiles.jsonl from query_profiling (train + dev)
+
+evaluation:
+  budget_matching: best_within_budget   # primary; nearest_higher = sensitivity (both frozen on dev)
+  bootstrap_samples: 2000
+  confidence_level: 0.95
+  equivalence_margin: 0.02
+  output_formats: [csv, json]

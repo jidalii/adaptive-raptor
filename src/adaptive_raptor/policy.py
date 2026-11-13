@@ -10,10 +10,10 @@ experiment runner never changes when a new decision rule arrives:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Literal
+from typing import Any, Literal
 
 from adaptive_raptor.config.schema import ConfigRef, RetrievalSection
-from adaptive_raptor.data.records import Question
+from adaptive_raptor.data.records import Document, Question
 
 RaptorOriginal = Literal["raptor_original"]
 PlannedConfig = ConfigRef | RaptorOriginal
@@ -21,8 +21,14 @@ PlannedConfig = ConfigRef | RaptorOriginal
 
 class ConfigPolicy(ABC):
     @abstractmethod
-    def configs_for(self, question: Question, query_embedding) -> list[PlannedConfig]:
+    def configs_for(
+        self, question: Question, query_embedding, document: Document | None = None
+    ) -> list[PlannedConfig]:
         """Configurations to execute for this question, in order."""
+
+    def trace_fields(self, question_id: str) -> dict[str, Any]:
+        """Extra per-question trace fields (the router's decision); none by default."""
+        return {}
 
 
 class CatalogPolicy(ConfigPolicy):
@@ -31,5 +37,7 @@ class CatalogPolicy(ConfigPolicy):
         if retrieval.include_raptor_original:
             self.plan.append("raptor_original")
 
-    def configs_for(self, question: Question, query_embedding) -> list[PlannedConfig]:
+    def configs_for(
+        self, question: Question, query_embedding, document: Document | None = None
+    ) -> list[PlannedConfig]:
         return list(self.plan)

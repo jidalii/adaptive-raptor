@@ -58,6 +58,12 @@ def required_credentials(config) -> dict[str, str]:
         env = PROVIDERS[ref.provider].api_key_env
         if env:
             needed.setdefault(env, f"{purpose} ({ref.provider})")
+    opt = config.optimizer
+    profiling = str(config.experiment.type) == "query_profiling"
+    if (opt.enabled or profiling) and opt.uses_profiler and opt.profiler.provider != "mock":
+        env = opt.profiler.api_key_env or PROVIDERS[opt.profiler.provider].api_key_env
+        if env:
+            needed.setdefault(env, f"LLM query profiler ({opt.profiler.provider})")
     return needed
 
 

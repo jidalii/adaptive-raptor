@@ -58,10 +58,44 @@ def test_deepseek_generation_one_call(tmp_path, monkeypatch):
     gen = build_generator(GenerationSection(), cache_dir=tmp_path, use_cache=True)
     r = gen.generate("How many layers does the encoder have?", ["The encoder has 12 layers."])
     assert r.text and r.model_version and r.input_tokens > 0
+    # T03: no hidden reasoning; billed output is close to the visible answer length.
+    assert r.reasoning_tokens == 0 and r.output_tokens <= 20, (r.output_tokens, r.text)
     assert gen.generate(
         "How many layers does the encoder have?", ["The encoder has 12 layers."]
     ).cache_hit
     assert answer_f1(r.text, (GoldAnswer("12 layers", "extractive"),))[0] >= 0
+
+
+@pytest.mark.skipif(not DEEPSEEK_KEY, reason="DEEPSEEK_API_KEY not set in env or .env")
+def test_deepseek_summary_is_non_empty(tmp_path, monkeypatch):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", DEEPSEEK_KEY)
+    from adaptive_raptor.models.summarization import make_openai_compatible_summarizer
+
+    s = make_openai_compatible_summarizer("deepseek", "deepseek-flash", tmp_path, True, 2)
+    context = (
+        "We train a 12-layer Transformer encoder with 8 attention heads on 1M sentence pairs. "
+        "BLEU improves by 2.1 points over the LSTM baseline, mostly on long sentences."
+    )
+    text = s.summarize(context, max_tokens=100)  # RAPTOR's summarization_length
+    assert text.strip()
+    assert s.usage["reasoning_tokens"] == 0 and s.usage["output_tokens"] <= 100
+
+
+@pytest.mark.skipif(not DEEPSEEK_KEY, reason="DEEPSEEK_API_KEY not set in env or .env")
+def test_llm_profiler_one_call(tmp_path, monkeypatch):
+    monkeypatch.setenv("DEEPSEEK_API_KEY", DEEPSEEK_KEY)
+    from adaptive_raptor.config.schema import ProfilerSection
+    from adaptive_raptor.data.records import Document
+    from adaptive_raptor.optimizer.profiler import LLMProfiler
+
+    p = LLMProfiler(ProfilerSection(), cache_dir=tmp_path)
+    doc = Document("d", "", title="Attention Is All You Need")
+    r = p.profile("q", "How many attention heads does the model use?", doc)
+    assert r.profile is not None, r.error
+    assert r.profile.answer_form == "short_span" and r.profile.n_facts == 1
+    assert r.confidence is None  # logprobs off by default (post-temperature, no signal at t=0)
+    assert r.output_tokens <= 60
+    assert p.profile("q", "How many attention heads does the model use?", doc).cache_hit
 
 
 def test_sbert_embedding_model_loads():

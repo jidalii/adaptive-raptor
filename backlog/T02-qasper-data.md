@@ -24,4 +24,8 @@ Splitting by **paper** keeps the router from memorizing a paper's topic (proposa
 ## Notes
 
 - Nov 6: download, verify, subsets, loader, `docs/DATA.md` and tests done. Counts match the release: 888 / 281 / 416 papers and 2,593 / 1,005 / 1,451 questions; no annotation lacks an answer.
-- **Left:** create the pilot and remainder subsets (`pilot_catalog.yaml` expects `data/subsets/qasper/v0.3/dev_pilot.txt`) and commit copies to `results/question_ids/`. Git is now initialized.
+- Nov 9:
+  - `dev_pilot` has 30 papers / 87 questions (seed 0); `dev_rest` has 251 papers / 918 questions (seed 1, pilot excluded).
+  - The two are disjoint and cover all of dev, and a rerun gives byte-identical files.
+  - Copies are in `results/question_ids/`; answer-type counts are in `NOTES.md`.
+  - **Done.**

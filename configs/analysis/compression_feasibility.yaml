@@ -1,0 +1,33 @@
+# Sentence-level extractive compression, Phase 1: offline feasibility. NO API CALLS.
+# Read by scripts/compression_feasibility.py (pydantic: adaptive_raptor.compression.CompressionSettings).
+# Source: the stored leaf_only@2000 retrievals (node ids per question) of the label runs, plus
+# the cached RAPTOR trees for the leaf text. No retrieval, index build or generation is rerun.
+# The test split is not read.
+#
+# Pre-registered reading of the results (fixed before the first run, 2026-11-10):
+#   primary coverage measure: highlighted-evidence recall (sentence-level gold evidence).
+#   Selection: the scorer x neighbors variant used for the dev claim is the one with the
+#   highest mean highlighted recall at budget 1000 on TRAIN. All other variants are exploratory.
+#   Phase 2 (generation F1, paid) is justified on DEV if either
+#     (a) compressed@1000 beats the chunk-level baseline at the same budget (leaf_only@1000):
+#         highlighted-recall delta 95% CI > 0 and answer-in-context delta lower bound > -0.01, or
+#     (b) compressed@1400 keeps >= 95% of leaf_only@2000's highlighted recall while using
+#         >= 25% fewer context tokens.
+name: compression_feasibility
+source_config: leaf_only@2000
+runs:
+  train: outputs/labels_train/20261109T195548Z
+  dev: outputs/labels_dev/20261109T195548Z
+budgets: [600, 1000, 1400]
+chunk_baselines: [400, 600, 1000, 1400, 2000]   # leaf_only@2000 truncated by rank = leaf_only@B
+scorers: [bm25, sbert, hybrid, random]
+neighbors: [false, true]
+redundancy_jaccard: 0.8
+bm25_k1: 1.2
+bm25_b: 0.75
+rrf_k: 60
+dependent_max_words: 5
+embedding_model: sentence-transformers/multi-qa-mpnet-base-cos-v1   # the retrieval embedder, local
+tokenizer: cl100k_base
+seed: 224
+out_dir: outputs/diagnostics/compression_feasibility   # a new timestamped subdirectory per run

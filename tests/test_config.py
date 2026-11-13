@@ -16,11 +16,50 @@ def test_example_configs_exist():
     assert {"baseline", "h1", "h2", "ablation", "oracle_interaction", "smoke_mock"} <= names
 
 
+# Templates whose input paths are filled in by the user before running.
+TEMPLATE_FILL = {
+    "h1": [
+        "optimizer.checkpoint=ckpt/router",
+        "optimizer.eval_labels=[t/labels.jsonl]",
+        "optimizer.profiler.profiles_path=[t/profiles.jsonl]",
+    ],
+    "router_train": [
+        "optimizer.train_labels=[a/labels.jsonl]",
+        "optimizer.dev_labels=[b/labels.jsonl]",
+        "optimizer.profiler.profiles_path=[c/profiles.jsonl]",
+    ],
+}
+
+
 @pytest.mark.parametrize("path", EXAMPLE_CONFIGS, ids=lambda p: p.stem)
 def test_example_configs_validate(path):
-    cfg = load_config(path)
+    cfg = load_config(path, TEMPLATE_FILL.get(path.stem, []))
     report = validate_config(cfg)
     assert report.ok, report.errors
+
+
+def test_router_train_template_requires_inputs():
+    from tests.conftest import ROOT
+
+    errors = validate_config(load_config(ROOT / "configs/experiments/router_train.yaml")).errors
+    assert {"train_labels", "dev_labels", "profiles_path"} <= {
+        k for k in ("train_labels", "dev_labels", "profiles_path") for e in errors if k in e
+    }
+
+
+def test_plan_b_model_is_rejected_by_router_train(minimal_config_dict):
+    minimal_config_dict["experiment"]["type"] = "router_train"
+    minimal_config_dict["optimizer"] = {
+        "enabled": True,
+        "model_type": "logistic_regression",
+        "features": ["query_embedding"],
+        "theta": 0.5,
+        "train_labels": ["a"],
+        "dev_labels": ["b"],
+        "profiler": {"profiles_path": ["c"]},
+    }
+    errors = validate_config(config_from_dict(minimal_config_dict)).errors
+    assert any("Plan A" in e for e in errors)
 
 
 def test_defaults_fill_in(minimal_config_dict):
@@ -100,6 +139,13 @@ def test_test_split_router_must_be_frozen():
 
     cfg = load_config(ROOT / "configs/experiments/h1.yaml", ["dataset.split=test"])
     assert any("checkpoint" in e for e in validate_config(cfg).errors)
+    fill = [x for x in TEMPLATE_FILL["h1"] if "checkpoint" not in x]
+    cfg = load_config(ROOT / "configs/experiments/h1.yaml", fill)
+    assert any("checkpoint" in e for e in validate_config(cfg).errors)
+    train = load_config(
+        ROOT / "configs/experiments/h1.yaml", [*TEMPLATE_FILL["h1"], "dataset.split=train"]
+    )
+    assert any("train split" in e for e in validate_config(train).errors)
 
 
 def test_overrides_nested_and_indexed():

@@ -1,0 +1,37 @@
+# Dev labels for theta calibration and comparator selection: dev_rest (251 papers, 918 questions; pilot excluded), all 9 configs, run A.
+# Costs money (RAPTOR summaries + answers via DeepSeek); responses and indexes are cached.
+#   uv run python -m adaptive_raptor.run --config configs/experiments/labels_dev.yaml
+# Output: outputs/labels_dev/<run>/labels.jsonl (input to router_train).
+experiment:
+  name: labels_dev
+  type: raptor_baseline
+  run_label: A
+  description: "Dev labels for theta calibration and comparator selection: dev_rest (251 papers, 918 questions; pilot excluded), all 9 configs, run A."
+
+dataset:
+  name: qasper
+  split: dev
+  doc_ids_file: data/subsets/qasper/v0.3/dev_rest.txt
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+raptor:
+  summarization_length: 200          # T08 decision
+
+retrieval:
+  include_raptor_original: false
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [400, 1000, 2000]         # caps on retrieved context; actual tokens are recorded
+
+generation:
+  price_input_per_mtok: 0.15
+  price_output_per_mtok: 0.60
+
+evaluation:
+  save_contexts: false
+  output_formats: [csv, json]
+
+runtime:
+  concurrency: 8

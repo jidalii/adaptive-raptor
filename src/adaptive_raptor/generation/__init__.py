@@ -11,6 +11,12 @@ from pathlib import Path
 
 from adaptive_raptor.cache import JsonCache, stable_hash
 from adaptive_raptor.config.schema import GenerationSection
+from adaptive_raptor.models.chat import (
+    CHAT_PROTOCOL_VERSION,
+    reasoning_tokens,
+    thinking_extra_body,
+    visible_text,
+)
 from adaptive_raptor.models.credentials import resolve
 
 log = logging.getLogger(__name__)
@@ -27,7 +33,53 @@ TEMPLATES: dict[str, str] = {
         "yes/no questions. Keep the answer short.\n\nPassages:\n{context}\n\n"
         "Question: {question}\nAnswer:"
     ),
+    # NarrativeQA: references are short free-form phrases (about 4-5 words).
+    "narrativeqa_default": (
+        "Answer the question about the story using only the context below. Answer with a "
+        "short phrase or one short sentence.\n\nContext:\n{context}\n\n"
+        "Question: {question}\nAnswer:"
+    ),
+    "narrativeqa_paraphrase": (
+        "Using nothing but the passages from the story provided, respond to the question. "
+        "Keep the answer to a brief phrase or a single short sentence.\n\nPassages:\n"
+        "{context}\n\nQuestion: {question}\nAnswer:"
+    ),
+    # Answer + evidence-sufficiency flag in one call (cascade first stage). Everything up to
+    # "Question: ..." is identical to qasper_default, so a retry with qasper_default and a
+    # larger context (which starts with the same chunks) shares the instructions + first
+    # chunks as a prompt prefix (provider prefix caching).
+    "qasper_sufficiency_v1": (
+        "Answer the question using only the context below. If the context does not "
+        'contain the answer, reply exactly "Unanswerable". For yes/no questions, reply '
+        '"Yes" or "No". Be concise.\n\nContext:\n{context}\n\nQuestion: {question}\n'
+        'Then, on a final new line, write "Evidence: SUFFICIENT", "Evidence: PARTIAL" or '
+        '"Evidence: INSUFFICIENT": does the context contain all the evidence needed for a '
+        "complete answer?\nAnswer:"
+    ),
 }
+SUFFICIENCY_LEVELS = ("sufficient", "partial", "insufficient")
+_SUFFICIENCY_LINE = re.compile(
+    r"^\W*evidence\W*:\W*(sufficient|partial|insufficient)\W*$", re.IGNORECASE
+)
+
+
+def wants_sufficiency(template: str) -> bool:
+    return "Evidence: SUFFICIENT" in template
+
+
+def split_sufficiency(text: str) -> tuple[str, str | None]:
+    """Split a response into (answer, sufficiency); sufficiency is None if no flag line.
+
+    The last line that is only an evidence flag is removed; the rest is the answer that
+    gets scored. A missing flag leaves the text unchanged."""
+    lines = text.strip().splitlines()
+    for i in range(len(lines) - 1, -1, -1):
+        m = _SUFFICIENCY_LINE.match(lines[i].strip())
+        if m:
+            answer = "\n".join(lines[:i] + lines[i + 1 :]).strip()
+            answer = re.sub(r"^\W*answer\W*:\s*", "", answer, flags=re.IGNORECASE)
+            return answer, m.group(1).lower()
+    return text.strip(), None
 
 
 def get_template(name_or_path: str) -> str:
@@ -51,6 +103,10 @@ class GenerationResult:
     latency_ms: float = 0.0
     model_version: str = ""
     cache_hit: bool = False
+    reasoning_tokens: int = 0
+    sufficiency: str | None = None  # only for sufficiency templates
+    raw_text: str = ""  # full response when it was post-processed (sufficiency templates)
+    prompt_cache_hit_tokens: int = 0  # provider prefix-cache hits (billed at a lower price)
 
 
 class Generator(ABC):
@@ -96,8 +152,6 @@ class OpenAICompatibleGenerator(Generator):
         self.cache = JsonCache(cache_dir, enabled=use_cache)
         self.max_retries = max_retries
         self._client = None
-        if cfg.thinking:
-            log.warning("generation.thinking=true is recorded but not sent to the API yet")
 
     @property
     def client(self):
@@ -120,6 +174,7 @@ class OpenAICompatibleGenerator(Generator):
             "temperature": self.cfg.temperature,
             "max_tokens": self.cfg.max_output_tokens,
             "thinking": self.cfg.thinking,
+            "protocol": CHAT_PROTOCOL_VERSION,
         }
 
     def generate(self, question: str, contexts: list[str]) -> GenerationResult:
@@ -137,22 +192,32 @@ class OpenAICompatibleGenerator(Generator):
             reraise=True,
         )
         def call():
-            return self.client.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.cfg.model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=self.cfg.temperature,
                 max_tokens=self.cfg.max_output_tokens,
+                extra_body=thinking_extra_body(self.cfg.provider, self.cfg.thinking),
             )
+            return response, visible_text(response)  # empty text raises -> retried
 
         started = time.perf_counter()
-        response = call()
+        response, text = call()
         usage = response.usage
+        raw, sufficiency = "", None
+        if wants_sufficiency(self.template):
+            raw = text
+            text, sufficiency = split_sufficiency(text)
         result = GenerationResult(
-            text=(response.choices[0].message.content or "").strip(),
+            text=text,
             input_tokens=getattr(usage, "prompt_tokens", 0) or 0,
             output_tokens=getattr(usage, "completion_tokens", 0) or 0,
             latency_ms=(time.perf_counter() - started) * 1000,
             model_version=response.model or self.cfg.model,
+            reasoning_tokens=reasoning_tokens(usage),
+            sufficiency=sufficiency,
+            raw_text=raw,
+            prompt_cache_hit_tokens=getattr(usage, "prompt_cache_hit_tokens", 0) or 0,
         )
         self.cache.put(key, {k: v for k, v in result.__dict__.items() if k != "cache_hit"})
         return result
@@ -182,4 +247,6 @@ __all__ = [
     "build_generator",
     "get_template",
     "render",
+    "split_sufficiency",
+    "wants_sufficiency",
 ]

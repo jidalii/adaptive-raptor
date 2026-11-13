@@ -45,8 +45,15 @@ from adaptive_raptor.indexing.store import (
     load_index,
     save_index,
 )
+from adaptive_raptor.models.chat import CHAT_PROTOCOL_VERSION
 
 log = logging.getLogger(__name__)
+
+
+class EmptySummaryError(RuntimeError):
+    """A built tree has a summary node with no text (it would never be retrieved)."""
+
+
 _UMAP_PATCH_LOCK = threading.Lock()
 
 
@@ -85,7 +92,7 @@ class IndexHandle:
 
 def raptor_index_params(cfg: RaptorSection) -> dict[str, Any]:
     """The RAPTOR parameters that affect a built tree (part of the cache key)."""
-    return {
+    params = {
         "embedding": cfg.embedding.model_dump(mode="json"),
         "summarization": cfg.summarization.model_dump(mode="json"),
         "summarization_length": cfg.summarization_length,
@@ -93,7 +100,16 @@ def raptor_index_params(cfg: RaptorSection) -> dict[str, Any]:
         "clustering": cfg.clustering.model_dump(mode="json"),
         "tokenizer": cfg.tokenizer,
         "deterministic_umap": cfg.deterministic_umap,
+        "chat_protocol": CHAT_PROTOCOL_VERSION,
     }
+    if cfg.summarization_prompt != "upstream":  # upstream keeps the historical key
+        from adaptive_raptor.models.summarization import summary_prompt
+
+        params["summarization_prompt"] = {
+            "name": cfg.summarization_prompt,
+            "text": list(summary_prompt(cfg.summarization_prompt)),
+        }
+    return params
 
 
 def make_tree_builder(cfg: RaptorSection, embedding_model, summarization_model):
@@ -184,6 +200,15 @@ class IndexBuilder:
         with seeded_umap(seed, self.cfg.deterministic_umap), warnings.catch_warnings():
             warnings.filterwarnings("ignore", message=".*n_jobs.*overridden.*")
             tree = builder.build_from_chunks([c.text for c in chunks])
+        empty = [
+            n.index
+            for layer, nodes in tree.layer_to_nodes.items()
+            if int(layer) > 0
+            for n in nodes
+            if not n.text.strip()
+        ]
+        if empty:
+            raise EmptySummaryError(f"{doc_id}: {len(empty)} empty summary node(s): {empty[:10]}")
         stats = tree_stats(tree, tiktoken.get_encoding(self.cfg.tokenizer))
         stats["build_time_s"] = round(time.perf_counter() - t0, 3)
         stats["num_chunks"] = len(chunks)

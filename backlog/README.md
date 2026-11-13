@@ -6,9 +6,9 @@ This is the **only place ticket status is tracked**. *Infra done* = code and off
 
 **Budget:** $50 total for generation and index construction ([proposal §6.4](../../Adaptive_RAPTOR_Proposal.md#64-generator-configuration-and-compute-budget)). Every ticket that calls an API logs its spend in `NOTES.md` (Spend log).
 
-## Blocker (Nov 6)
+## Resolved blocker (Nov 6 → fixed Nov 9)
 
-**`deepseek-flash` returns empty RAPTOR summaries.** Its hidden reasoning tokens use up `summarization_length`, so every summary is an empty string, and answers are billed for reasoning too. Fix T03 (disable thinking, and reject empty completions), then rebuild T04's indexes, before any paid run (T08 onward). Details are in T03 and T04.
+`deepseek-flash` thinks by default, and its hidden reasoning used up `summarization_length`, so every summary came back empty. Fixed in T03: every request sends `thinking: disabled`, and empty completions are errors. Indexes were rebuilt under a new key in T04. Evidence and spend are in [`NOTES.md`](../NOTES.md).
 
 ## Tier 1: H1 + H2 on QASPER (must-have)
 
@@ -17,16 +17,16 @@ Minimum viable deliverable = E0 + E1 + E2 + E3 + E5.
 | # | Ticket | Target week | Status |
 |---|---|---|---|
 | T01 | [Repo, environment and config system](T01-repo-and-environment.md) | Nov 6 | Done |
-| T02 | [QASPER download, splits and pilot set](T02-qasper-data.md) | Nov 6 – 9 | Infra done |
-| T03 | [Generator backend (DeepSeek)](T03-generator-backend.md) | Nov 6 – 9 | **Blocked** |
-| T04 | [RAPTOR index from custom leaves](T04-raptor-index.md) | Nov 7 – 10 | **Blocked** |
+| T02 | [QASPER download, splits and pilot set](T02-qasper-data.md) | Nov 6 – 9 | Done |
+| T03 | [Generator backend (DeepSeek)](T03-generator-backend.md) | Nov 6 – 9 | Done |
+| T04 | [RAPTOR index from custom leaves](T04-raptor-index.md) | Nov 7 – 10 | Done |
 | T05 | [Retrieval executor (strategy × budget)](T05-retrieval-executor.md) | Nov 9 – 11 | Done |
-| T06 | [QASPER F1, label store and collector](T06-metrics-and-labels.md) | Nov 9 – 11 | Partial |
-| T07 | [Evaluation harness: frontiers, oracle, matching, bootstrap](T07-evaluation-harness.md) | Nov 10 – 12 | Next |
+| T06 | [QASPER F1, label store and collector](T06-metrics-and-labels.md) | Nov 9 – 11 | Done (evidence recall → T14) |
+| T07 | [Evaluation harness: frontiers, oracle, matching, bootstrap](T07-evaluation-harness.md) | Nov 10 – 12 | Done |
 | T08 | [Pilot (E0) and go/no-go](T08-pilot-and-go-no-go.md) | Nov 11 – 13 |  |
 | T09 | [PIC-capped and chunking controls](T09-chunkers.md) | Nov 12 – 16 |  |
 | T10 | [H2 on dev: index variants and comparator selection](T10-h2-dev-selection.md) | Nov 16 – 19 |  |
-| T11 | [Router: features, acceptability, selection, calibration](T11-router.md) | Nov 14 – 19 |  |
+| T11 | [Router: features, acceptability, selection, calibration](T11-router.md) | Nov 14 – 19 | Code done (Plan A); needs train labels |
 | T12 | [Freeze and test labeling](T12-freeze-and-test-labeling.md) | Nov 20 – 23 |  |
 | T13 | [Test experiments E1–E5](T13-test-experiments.md) | Nov 23 – 27 |  |
 | T14 | [Error analysis and write-up](T14-error-analysis-and-report.md) | Nov 27 – Dec 3 |  |

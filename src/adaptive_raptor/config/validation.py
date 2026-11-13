@@ -36,18 +36,14 @@ def _check_optimizer_common(cfg: ExperimentConfig, r: ValidationReport) -> None:
         )
     if len(catalog_ids) < 2:
         r.errors.append("optimizer requires at least 2 catalog configurations")
-    if opt.theta is None and opt.target_mean_tokens is None and opt.checkpoint is None:
+    targets = (opt.theta, opt.target_mean_tokens, opt.target_config, opt.checkpoint)
+    if all(t is None for t in targets):
         r.errors.append(
-            "optimizer needs one of: theta (fixed), target_mean_tokens (calibrate on dev), "
-            "or checkpoint (pre-trained and calibrated)"
+            "optimizer needs one of: theta (fixed), target_mean_tokens or target_config "
+            "(calibrate on dev), or checkpoint (pre-trained and calibrated)"
         )
-    if opt.target_mean_tokens is not None:
-        lo, hi = min(cfg.retrieval.budgets), max(cfg.retrieval.budgets)
-        if not lo <= opt.target_mean_tokens <= hi:
-            r.errors.append(
-                f"optimizer.target_mean_tokens={opt.target_mean_tokens} is outside the "
-                f"budget range [{lo}, {hi}]"
-            )
+    if opt.target_config is not None and opt.target_config not in catalog_ids:
+        r.errors.append(f"optimizer.target_config {opt.target_config} is not in the catalog")
 
 
 def _check_raptor_baseline(cfg: ExperimentConfig, r: ValidationReport) -> None:
@@ -58,10 +54,20 @@ def _check_raptor_baseline(cfg: ExperimentConfig, r: ValidationReport) -> None:
 
 
 def _check_h1(cfg: ExperimentConfig, r: ValidationReport) -> None:
-    if not cfg.optimizer.enabled:
+    opt = cfg.optimizer
+    if not opt.enabled:
         r.errors.append("h1_optimizer requires optimizer.enabled: true")
     else:
         _check_optimizer_common(cfg, r)
+    # H1 is a replay over frozen routers: nothing is fitted or selected on this split
+    if opt.checkpoint is None:
+        r.errors.append("h1_optimizer needs optimizer.checkpoint (a frozen router_train output)")
+    if not opt.eval_labels:
+        r.errors.append("h1_optimizer needs optimizer.eval_labels (catalog labels of the split)")
+    if opt.uses_profiler and not opt.profiler.profiles_path:
+        r.errors.append("h1_optimizer needs optimizer.profiler.profiles_path for the split")
+    if cfg.dataset.split == "train":
+        r.errors.append("h1_optimizer never evaluates on the train split")
     if "best_fixed" not in cfg.evaluation.baselines:
         r.errors.append("h1_optimizer requires 'best_fixed' in evaluation.baselines (iso-budget)")
     if "answer_f1" not in cfg.evaluation.metrics:
@@ -115,12 +121,50 @@ def _check_oracle_interaction(cfg: ExperimentConfig, r: ValidationReport) -> Non
         r.warnings.append("oracle_interaction does not use the router; optimizer is ignored")
 
 
+def _check_query_profiling(cfg: ExperimentConfig, r: ValidationReport) -> None:
+    if not cfg.optimizer.uses_profiler:
+        r.errors.append("query_profiling requires 'llm_profile' in optimizer.features")
+    prof = cfg.optimizer.profiler
+    if prof.temperature != 0:
+        r.warnings.append("profiler temperature != 0: profiles are samples, not reproducible")
+    if prof.use_logprobs and prof.temperature == 0:
+        r.warnings.append(
+            "profiler.use_logprobs at temperature 0: DeepSeek logprobs are post-temperature "
+            "(all 0.0), so confidence is unavailable and the confidence fallback is inactive"
+        )
+
+
+def _check_router_train(cfg: ExperimentConfig, r: ValidationReport) -> None:
+    opt = cfg.optimizer
+    _check_optimizer_common(cfg, r)
+    if opt.model_type not in ("llm_profile_table", "llm_profile_rules"):
+        r.errors.append(
+            f"router_train supports the Plan A models only (got {opt.model_type}); "
+            "Plan B is built only if Plan A shows no improvement on dev"
+        )
+    if not opt.train_labels and opt.model_type == "llm_profile_table":
+        r.errors.append("router_train needs optimizer.train_labels (labels.jsonl on train)")
+    if not opt.dev_labels:
+        r.errors.append("router_train needs optimizer.dev_labels (labels.jsonl on dev)")
+    if not opt.profiler.profiles_path:
+        r.errors.append("router_train needs optimizer.profiler.profiles_path")
+    if cfg.dataset.split == "test":
+        r.errors.append("router_train never uses the test split")
+    if cfg.evaluation.budget_matching not in ("best_within_budget", "nearest_higher"):
+        r.errors.append(
+            "router_train freezes comparators by total cost: evaluation.budget_matching must "
+            "be best_within_budget (primary) or nearest_higher"
+        )
+
+
 _TYPE_CHECKS = {
     ExperimentType.RAPTOR_BASELINE: _check_raptor_baseline,
     ExperimentType.H1_OPTIMIZER: _check_h1,
     ExperimentType.H2_CHUNKING: _check_h2,
     ExperimentType.STRATEGY_BUDGET_ABLATION: _check_ablation,
     ExperimentType.ORACLE_INTERACTION: _check_oracle_interaction,
+    ExperimentType.QUERY_PROFILING: _check_query_profiling,
+    ExperimentType.ROUTER_TRAIN: _check_router_train,
 }
 
 
@@ -143,7 +187,10 @@ def validate_config(cfg: ExperimentConfig) -> ValidationReport:
     if gen.temperature != 0:
         report.warnings.append("generation.temperature != 0: labels will be less reproducible")
     if gen.thinking:
-        report.warnings.append("generation.thinking is recorded but not sent to the API yet")
+        report.warnings.append(
+            "generation.thinking=true: hidden reasoning tokens are billed and count against "
+            "max_output_tokens; labels and costs are not comparable with non-thinking runs"
+        )
     mocks = [
         name
         for name, provider in (
@@ -157,6 +204,13 @@ def validate_config(cfg: ExperimentConfig) -> ValidationReport:
         report.warnings.append(
             f"offline smoke configuration (mock: {', '.join(mocks) or 'none'}; "
             f"dataset: {cfg.dataset.name}): results are not meaningful"
+        )
+    if cfg.dataset.name == "narrativeqa" and not cfg.generation.prompt_template.startswith(
+        "narrativeqa"
+    ):
+        report.warnings.append(
+            f"dataset narrativeqa with prompt template '{cfg.generation.prompt_template}' "
+            "(QASPER prompts ask for 'Unanswerable'/'Yes'/'No' answers)"
         )
     if cfg.evaluation.oracle.enabled and not cfg.evaluation.oracle.cross_fit:
         report.warnings.append("oracle without cross-fitting is biased upward (winner's curse)")

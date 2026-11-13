@@ -30,4 +30,11 @@ Everything above the leaves depends on the leaves, so leaf construction is plugg
   1. Add the summarizer settings that change the output (the thinking switch, prompt version) to the index cache key, or bump `INDEX_FORMAT_VERSION`. Otherwise the cache will reuse the broken indexes, since provider and model name are unchanged.
   2. Delete `indexes/` and `.cache/summaries/` from the Nov 6 run.
   3. Add a build-time guard that fails if any summary node is empty.
+- **Nov 9: unblocked.**
+  - `INDEX_FORMAT_VERSION=2`, and the index key gains `chat_protocol`.
+  - The stale `indexes/qasper` and `.cache/summaries` were deleted.
+  - `build` raises `EmptySummaryError` if any summary node is empty.
+  - F-100 was built for 3 pilot papers: 41/41 summaries non-empty, and 65/330 retrieved nodes come from summary layers. The rerun reused all 3.
+  - Cost ≈ $0.0018 per paper (`NOTES.md`). **Done.**
+  - **Open for T08:** every summary hits the 100-token cap and ends mid-sentence. Upstream does the same. Decide whether to keep fidelity or raise the cap (see `NOTES.md`).
 - Upstream reclustering drops `reduction_dimension` and `threshold` on recursive calls; kept for fidelity and documented.

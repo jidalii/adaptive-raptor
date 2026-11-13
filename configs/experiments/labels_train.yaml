@@ -1,0 +1,37 @@
+# Router training labels: 340 train papers (1,019 questions), all 9 configs, run A.
+# Costs money (RAPTOR summaries + answers via DeepSeek); responses and indexes are cached.
+#   uv run python -m adaptive_raptor.run --config configs/experiments/labels_train.yaml
+# Output: outputs/labels_train/<run>/labels.jsonl (input to router_train).
+experiment:
+  name: labels_train
+  type: raptor_baseline
+  run_label: A
+  description: "Router training labels: 340 train papers (1,019 questions), all 9 configs, run A."
+
+dataset:
+  name: qasper
+  split: train
+  doc_ids_file: data/subsets/qasper/v0.3/train_router.txt
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+raptor:
+  summarization_length: 200          # T08 decision
+
+retrieval:
+  include_raptor_original: false
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [400, 1000, 2000]         # caps on retrieved context; actual tokens are recorded
+
+generation:
+  price_input_per_mtok: 0.15
+  price_output_per_mtok: 0.60
+
+evaluation:
+  save_contexts: false
+  output_formats: [csv, json]
+
+runtime:
+  concurrency: 8

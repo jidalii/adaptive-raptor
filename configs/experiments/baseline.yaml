@@ -25,7 +25,7 @@ chunking:
 raptor:
   embedding: {provider: sbert, model: sentence-transformers/multi-qa-mpnet-base-cos-v1}
   summarization: {provider: deepseek, model: deepseek-flash}
-  summarization_length: 100
+  summarization_length: 200      # T08 decision (upstream default 100)
   num_layers: 5
   clustering: {reduction_dimension: 10, threshold: 0.1, max_length_in_cluster: 3500}
   seeds: [224]

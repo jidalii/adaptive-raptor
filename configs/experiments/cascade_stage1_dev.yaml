@@ -1,0 +1,43 @@
+# Cascade first stage on dev: answer + evidence-sufficiency flag in ONE call
+# (prompt qasper_sufficiency_v1) for leaf_only@400 and leaf_only@1000. Purpose: evaluate the trigger fixed on train (once).
+# Stage-2 answers are NOT re-generated: they are the stored qasper_default answers of
+# leaf_only@1000/@2000 in labels_dev (same prompt as the fixed baselines).
+# Indexes are cached (cap 200) -> no summarization calls; run label S keeps these rows apart
+# from the run-A label tables.
+# COSTS MONEY (answers only):
+#   uv run python -m adaptive_raptor.run --config configs/experiments/cascade_stage1_dev.yaml
+# Analysis (offline): uv run python scripts/analyze_cascade.py --help
+experiment:
+  name: cascade_stage1_dev
+  type: raptor_baseline
+  run_label: S
+  description: "Cascade stage 1 (dev, 251 papers, 918 questions): answer + sufficiency flag at leaf_only@400/1000."
+
+dataset:
+  name: qasper
+  split: dev
+  doc_ids_file: data/subsets/qasper/v0.3/dev_rest.txt
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+raptor:
+  summarization_length: 200          # must match the cached indexes (no rebuild)
+
+retrieval:
+  include_raptor_original: false
+  strategies: [leaf_only]
+  budgets: [400, 1000]
+
+generation:
+  prompt_template: qasper_sufficiency_v1
+  price_input_per_mtok: 0.15
+  price_output_per_mtok: 0.60
+
+evaluation:
+  save_contexts: false
+  output_formats: [csv, json]
+
+runtime:
+  concurrency: 8

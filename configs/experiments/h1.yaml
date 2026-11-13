@@ -1,15 +1,20 @@
-# E1 / H1: router vs. dev-selected best fixed (strategy, budget) at matched average tokens.
-# Dev run: theta is calibrated to target_mean_tokens. For the test run, set
-# dataset.split=test and optimizer.checkpoint to the frozen router.
+# E1 / H1 (WP10): frozen LLM-profile routers vs. the dev-selected best fixed config at
+# matched TOTAL cost (context + profiler tokens). A replay over labels: every catalog
+# config of the evaluated split is labeled (T12), so no API calls are made and nothing is
+# fitted or selected here. Theta, the cost model and the matched comparator come from the
+# router_train checkpoints (dev only). Fill in the paths, then:
+#   uv run python -m adaptive_raptor.run --config configs/experiments/h1.yaml
+# Outputs: h1_systems.{csv,json} (F1, context/profiler/total tokens, USD per system) and
+# h1_deltas.{csv,json} (paired document-bootstrap CIs vs. each matched comparator).
 experiment:
   name: h1_router_f100
   type: h1_optimizer
   seed: 0
-  description: Iso-budget evaluation of the query-aware router on the F-100 index.
+  description: Iso-budget evaluation of the LLM-profile router on the F-100 index.
 
 dataset:
   name: qasper
-  split: dev
+  split: test
 
 chunking:
   variants:
@@ -21,17 +26,29 @@ retrieval:
 
 optimizer:
   enabled: true
-  model_type: logistic_regression
-  features: [query_embedding, lexical]
-  pca_dim: 32
-  regularization_c: 1.0
-  label_epsilon: 0.05
-  target_mean_tokens: 1000
+  model_type: llm_profile_table        # Plan A; Plan B (logistic) only if Plan A fails on dev
+  features: [llm_profile]
+  checkpoint: null                     # A1: outputs/router_train/<run>/router
+  ablation_checkpoints: []             # A2: [outputs/router_train_rules/<run>/router]
+  eval_labels: []                      # labels.jsonl of the evaluated split (T12)
   fallback: {strategy: collapsed, budget: 2000}
+  profiler:
+    provider: deepseek
+    model: deepseek-flash
+    prompt: profile_v3               # frozen 2026-11-09 (prompt_hash e22d6935b289c85d)
+    inputs: [question, title]
+    confidence_threshold: null       # decision (a): no confidence signal; invalid -> fallback
+    profiles_path: []                  # profiles.jsonl of the evaluated split
+
+generation:                            # prices for the USD columns only
+  price_input_per_mtok: 0.15
+  price_output_per_mtok: 0.60
 
 evaluation:
   metrics: [answer_f1, context_tokens, latency]
   baselines: [best_fixed, raptor_default]
-  budget_matching: conservative_at_least
+  budget_matching: best_within_budget   # primary; nearest_higher = sensitivity (both frozen on dev)
   bootstrap_samples: 2000
   confidence_level: 0.95
+  equivalence_margin: 0.02
+  output_formats: [csv, json]

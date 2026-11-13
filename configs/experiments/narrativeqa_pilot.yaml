@@ -1,0 +1,44 @@
+# NarrativeQA pilot: all 9 configs on 20 dev (HF validation) stories, 10 books + 10 movie
+# scripts (seed 0). Costs money (RAPTOR summaries + answers via DeepSeek), about $3.5-4 for
+# runs A and B together; indexes and responses are cached. Pre-registration: NOTES.md
+# (2026-11-11, NarrativeQA pilot).
+#   ./scripts/download_datasets.sh --dataset narrativeqa --split dev
+#   ./scripts/download_datasets.sh --dataset narrativeqa --split dev --make-subset pilot --n-docs 20 --seed 0
+#   uv run python -m adaptive_raptor.run --config configs/experiments/narrativeqa_pilot.yaml
+# Run B (same indexes, paraphrased prompt):
+#   ... --set experiment.run_label=B --set generation.prompt_template=narrativeqa_paraphrase
+experiment:
+  name: narrativeqa_pilot
+  type: raptor_baseline
+  run_label: A
+  description: "NarrativeQA pilot: 20 dev stories (10 books, 10 scripts), 9 configs; ROUGE-L primary."
+
+dataset:
+  name: narrativeqa
+  version: 2e643e73
+  split: dev
+  doc_ids_file: data/subsets/narrativeqa/2e643e73/dev_pilot.txt
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+raptor:
+  summarization_length: 200          # same as QASPER (T08); upstream prompt
+
+retrieval:
+  include_raptor_original: false
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [400, 1000, 2000]
+
+generation:
+  prompt_template: narrativeqa_default
+  price_input_per_mtok: 0.15
+  price_output_per_mtok: 0.60
+
+evaluation:
+  save_contexts: false
+  output_formats: [csv, json]
+
+runtime:
+  concurrency: 8

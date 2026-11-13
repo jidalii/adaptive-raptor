@@ -18,7 +18,7 @@ retrieval:
   budgets: [400, 1000, 2000]
 
 optimizer:
-  label_epsilon: 0.05
+  label_epsilon: 0.02
 
 evaluation:
   metrics: [answer_f1, context_tokens]

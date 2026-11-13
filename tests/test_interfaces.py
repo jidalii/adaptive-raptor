@@ -27,15 +27,10 @@ from adaptive_raptor.generation import MockGenerator, build_generator, get_templ
 from adaptive_raptor.models.credentials import MissingCredentialsError
 from adaptive_raptor.optimizer import (
     AcceptabilityModel,
-    CostModel,
     FeatureExtractor,
-    PlanSelector,
-    Router,
-    RouterPolicy,
     calibrate_theta,
     train_router,
 )
-from adaptive_raptor.profiling import acceptability_labels
 from adaptive_raptor.stub import ensure_implemented, is_stub
 
 DOC = Document(doc_id="d1", text="One. Two.")
@@ -64,20 +59,11 @@ def test_fixed_chunker_is_not_a_stub():
     assert not is_stub(FixedSizeChunker)
 
 
-def test_optimizer_components_are_stubs():
+def test_plan_b_components_are_stubs():
+    """Plan B (embedding classifier) is built only if the LLM router fails on dev."""
     opt = OptimizerSection()
-    for obj in (
-        FeatureExtractor(opt),
-        AcceptabilityModel(opt, ["leaf_only@400"]),
-        CostModel(),
-        PlanSelector(CATALOG, CostModel(), CATALOG[0]),
-        Router(opt, CATALOG),
-    ):
+    for obj in (FeatureExtractor(opt), AcceptabilityModel(opt, ["leaf_only@400"])):
         assert is_stub(obj)
-    with pytest.raises(NotImplementedError):
-        RouterPolicy(Router(opt, CATALOG))  # rejected before any work
-    with pytest.raises(NotImplementedError):
-        acceptability_labels([], 0.05)
 
 
 def test_fitting_on_test_split_is_refused():
@@ -88,11 +74,35 @@ def test_fitting_on_test_split_is_refused():
     with pytest.raises(TestSplitLeakageError):
         calibrate_theta("test", [], None, 1000)
     with pytest.raises(TestSplitLeakageError):
-        train_router(None, None, "test")
+        train_router(
+            None,
+            train_records=[],
+            dev_records=[],
+            profiles=None,
+            prompt_hash="",
+            profiler_model="",
+            split_train="test",
+        )
+    with pytest.raises(TestSplitLeakageError):
+        train_router(
+            None,
+            train_records=[],
+            dev_records=[],
+            profiles=None,
+            prompt_hash="",
+            profiler_model="",
+            split_dev="test",
+        )
 
 
 def test_research_runners_report_not_implemented():
-    research = set(ExperimentType) - {ExperimentType.RAPTOR_BASELINE}
+    implemented = {
+        ExperimentType.RAPTOR_BASELINE,
+        ExperimentType.QUERY_PROFILING,
+        ExperimentType.ROUTER_TRAIN,
+        ExperimentType.H1_OPTIMIZER,
+    }
+    research = set(ExperimentType) - implemented
     assert set(registered_types()) == set(ExperimentType)
     for t in research:
         result = get_experiment_class(t)(config=None, run_dir=None).run()

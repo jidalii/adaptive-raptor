@@ -40,6 +40,9 @@ dev = [
   "pytest>=8.0",
   "ruff>=0.6",
 ]
+plots = [
+    "matplotlib>=3.11.2",
+]
 
 [build-system]
 requires = ["hatchling"]

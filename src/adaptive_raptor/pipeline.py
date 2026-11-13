@@ -19,7 +19,7 @@ from typing import Any
 from adaptive_raptor.chunking import build_chunker
 from adaptive_raptor.config.schema import ChunkingVariant, ConfigRef, ExperimentConfig
 from adaptive_raptor.data import DatasetSplit, load_dataset
-from adaptive_raptor.evaluation.metrics import answer_f1
+from adaptive_raptor.evaluation.metrics import answer_f1, answer_rouge_l
 from adaptive_raptor.evaluation.traces import ExecutionTrace, TraceWriter
 from adaptive_raptor.generation import build_generator
 from adaptive_raptor.policy import CatalogPolicy, ConfigPolicy, PlannedConfig
@@ -80,6 +80,7 @@ class QAPipeline:
                 cache_dir=rt.cache_dir / "summaries",
                 use_cache=rt.use_cache,
                 max_retries=rt.max_retries,
+                prompt=cfg.raptor.summarization_prompt,
             ),
         )
         executor = RetrievalExecutor(cfg.retrieval, embedding, cfg.raptor.tokenizer)
@@ -123,7 +124,7 @@ class QAPipeline:
                         else:
                             report.indexes_built += 1
                         for t in self._answer_doc(
-                            pool, executor, generator, handle, err, variant, seed, questions
+                            pool, executor, generator, handle, err, variant, seed, questions, doc
                         ):
                             traces.write(t)
                             report.n_traces += 1
@@ -148,7 +149,9 @@ class QAPipeline:
             log.exception("index failed for %s", doc.doc_id)
             return None, f"{type(exc).__name__}: {exc}"
 
-    def _answer_doc(self, pool, executor, generator, handle, index_error, variant, seed, questions):
+    def _answer_doc(
+        self, pool, executor, generator, handle, index_error, variant, seed, questions, doc
+    ):
         cfg = self.config
         jobs = []
         for q in questions:
@@ -168,7 +171,9 @@ class QAPipeline:
                 )
                 continue
             embedding = executor.embed(q.text)  # cached; reused by every config
-            for planned in self.policy.configs_for(q, embedding):
+            planned_configs = self.policy.configs_for(q, embedding, doc)
+            base = {**base, **self.policy.trace_fields(q.question_id)}
+            for planned in planned_configs:
                 jobs.append(pool.submit(self._one, executor, generator, handle, q, planned, base))
         return [j.result() for j in jobs]  # submission order -> deterministic trace order
 
@@ -187,8 +192,12 @@ class QAPipeline:
             g = generator.generate(q.text, r.texts)
             trace.answer, trace.model_version = g.text, g.model_version
             trace.input_tokens, trace.output_tokens = g.input_tokens, g.output_tokens
+            trace.reasoning_tokens = g.reasoning_tokens
+            trace.sufficiency = g.sufficiency
+            trace.prompt_cache_hit_tokens = g.prompt_cache_hit_tokens
             trace.generation_ms, trace.generation_cache_hit = round(g.latency_ms, 1), g.cache_hit
             trace.answer_f1, trace.answer_type = answer_f1(g.text, q.answers)
+            trace.answer_rouge_l = round(answer_rouge_l(g.text, q.answers), 6)
         except Exception as exc:
             from adaptive_raptor.models.credentials import MissingCredentialsError
 

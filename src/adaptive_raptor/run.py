@@ -21,14 +21,22 @@ from dotenv import load_dotenv
 
 from adaptive_raptor.config.loader import ConfigError, dump_yaml, load_config
 from adaptive_raptor.experiments import RunStatus
-from adaptive_raptor.experiments.runner import check, run_experiment
+from adaptive_raptor.experiments.runner import (
+    LOG_DATEFMT,
+    LOG_FORMAT,
+    UTCFormatter,
+    check,
+    run_experiment,
+)
 
 EXIT_OK, EXIT_FAILED, EXIT_INVALID, EXIT_NOT_IMPLEMENTED = 0, 1, 2, 3
 
 
 def configure_logging(level: str) -> None:
     """Our logs at ``level``; upstream RAPTOR (root logger, very verbose) at WARNING."""
-    logging.basicConfig(format="%(levelname)s %(name)s: %(message)s", level=logging.WARNING)
+    logging.basicConfig(format=LOG_FORMAT, datefmt=LOG_DATEFMT, level=logging.WARNING)
+    for h in logging.getLogger().handlers:
+        h.setFormatter(UTCFormatter(LOG_FORMAT, LOG_DATEFMT))
     logging.getLogger().setLevel(logging.DEBUG if level == "DEBUG" else logging.WARNING)
     logging.getLogger("adaptive_raptor").setLevel(level)
 

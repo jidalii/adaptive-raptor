@@ -32,3 +32,5 @@ checkout when one is present at `../raptor`.
 | `models/summarization.py` | `GPT3TurboSummarizationModel` hard-codes OpenAI and `gpt-3.5-turbo` | Same prompt text verbatim; model/endpoint from config (DeepSeek), `temperature=0`, disk cache | Configurable provider, reproducibility |
 | `retrieval.py` | `TreeRetriever.retrieve` with `top_k` cut-off | Strategies run `retrieve_information_collapse_tree` on a layer-restricted view, `top_k` = all nodes (budget-limited); `raptor_original` calls `retrieve` unchanged | Strategy × budget catalog |
 | `models/embedding.py` | Query re-embedded on every retrieval | Memoized embedding wrapper | Embed each query once |
+| `config/schema.py` `raptor.summarization_length` | Default 100 output tokens per summary (summaries end mid-sentence) | Default 200 | T08 decision (2026-11-09); 100 truncated every summary |
+| `models/chat.py` | No thinking control (OpenAI models) | DeepSeek `thinking: disabled` sent explicitly | Hidden reasoning emptied summaries (T03) |

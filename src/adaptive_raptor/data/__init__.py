@@ -55,6 +55,15 @@ def load_dataset(section) -> DatasetSplit:
             manifest = {k: m.get(k) for k in ("dataset", "version", "raw_sha256",
                                               "preprocess_version", "sources")}
             manifest["split_files"] = m.get("splits", {}).get(section.split, {}).get("files")
+    elif section.name == "narrativeqa":
+        pdir = processed_dir("narrativeqa", section.version, section.path)
+        docs, qs = qasper.load_processed(pdir, section.split)  # same JSONL record format
+        mpath = pdir / "manifest.json"
+        if mpath.is_file():
+            m = json.loads(mpath.read_text())
+            manifest = {k: m.get(k) for k in ("dataset", "version", "revision", "raw_sha256",
+                                              "preprocess_version")}
+            manifest["split_files"] = m.get("splits", {}).get(section.split, {}).get("files")
     elif section.name == "qasper_tiny":
         raw = json.loads(FIXTURE_PATH.read_text())[section.split]
         docs, qs, _ = qasper.parse_split(raw)

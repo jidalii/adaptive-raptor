@@ -27,6 +27,7 @@ htmlcov/
 /data/
 /indexes/
 /outputs/
+/logs/
 /.cache/
 /models/
 /checkpoints/

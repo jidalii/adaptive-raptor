@@ -1,0 +1,39 @@
+# Prompt-controlled baseline for the cascade: fixed leaf_only@2000 answered with the same
+# qasper_sufficiency_v1 prompt as the cascade's first stage (flag stripped before scoring).
+# Gives the new-prompt leaf ladder 400/1000/2000 on dev together with cascade_stage1_dev, and
+# the new-prompt stage-2 answers for a fully prompt-matched cascade. COSTS MONEY (~$0.30):
+#   uv run python -m adaptive_raptor.run --config configs/experiments/cascade_fixed2000_dev.yaml
+experiment:
+  name: cascade_fixed2000_dev
+  type: raptor_baseline
+  run_label: S
+  description: "Prompt-controlled baseline: fixed leaf_only@2000 with the sufficiency prompt (dev, 918 questions)."
+
+dataset:
+  name: qasper
+  split: dev
+  doc_ids_file: data/subsets/qasper/v0.3/dev_rest.txt
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+raptor:
+  summarization_length: 200          # must match the cached indexes (no rebuild)
+
+retrieval:
+  include_raptor_original: false
+  strategies: [leaf_only]
+  budgets: [2000]
+
+generation:
+  prompt_template: qasper_sufficiency_v1
+  price_input_per_mtok: 0.15
+  price_output_per_mtok: 0.60
+
+evaluation:
+  save_contexts: false
+  output_formats: [csv, json]
+
+runtime:
+  concurrency: 8

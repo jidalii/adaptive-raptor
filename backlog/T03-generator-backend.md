@@ -32,6 +32,15 @@ Labels, θ and every H1/H2 number are tied to this generator (proposal §6.4), s
   - Answers were non-empty, but short answers such as "Transformer layer." were billed 135–164 output tokens.
   - Fix: find DeepSeek's documented way to disable thinking for this model (request parameter or a non-reasoning model name), send it from both clients, and make `generation.thinking` actually control it.
   - Guards to add: treat an empty completion as an error (retry or fail the run), and log reasoning tokens separately if the API reports them.
+- **Nov 9: blocker fixed.**
+  - `models/chat.py` sends `extra_body={"thinking": {"type": "enabled"|"disabled"}}` on every DeepSeek request. `generation.thinking` drives answers; summaries always disable it.
+  - Empty text raises `EmptyCompletionError`, which is retried and then surfaced as an error.
+  - `reasoning_tokens` is logged in traces and in summarizer usage.
+  - Cache keys include `CHAT_PROTOCOL_VERSION=2`, so Nov 6 outputs can't be reused.
+  - Live check: reasoning 36 → 0 tokens; billed output equals the visible text.
+  - Integration tests assert 0 reasoning tokens, ≤ 20 output tokens for a short answer, and a non-empty summary within 100 tokens. Offline tests are in `tests/test_chat_protocol.py`.
+  - The same probe showed that JSON mode and logprobs work with thinking disabled.
+  - **Done.**
 - The API returns only the alias `deepseek-flash` as the model version, so silent model updates can't be detected from responses. Record the date of each run, and check whether the API exposes a pinned version.
 - Pricing (user-reported, off-peak): $0.15 per 1M input, $0.60 per 1M output. Confirm peak vs. off-peak hours before T08/T12.
 - Temperature 0 isn't guaranteed deterministic on hosted APIs; T08 measures run A vs. run B disagreement.

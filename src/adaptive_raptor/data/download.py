@@ -24,7 +24,7 @@ import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
 
-from adaptive_raptor.data import qasper
+from adaptive_raptor.data import narrativeqa, qasper
 from adaptive_raptor.data.subsets import read_id_file, sample_doc_ids, write_id_file
 from adaptive_raptor.paths import data_root, processed_dir, raw_dir
 
@@ -54,6 +54,39 @@ SOURCES = {
         },
     }
 }
+
+
+NQA_REVISION = "2e643e7363944af1c33a652d1c87320d0871c4e4"
+NQA_VERSION = NQA_REVISION[:8]
+NQA_BASE = f"https://huggingface.co/datasets/deepmind/narrativeqa/resolve/{NQA_REVISION}/data"
+# Only the splits we use are listed. The test split is not downloaded (final evaluation only).
+NQA_SOURCES = {
+    "version": NQA_VERSION,
+    "revision": NQA_REVISION,
+    "homepage": "https://huggingface.co/datasets/deepmind/narrativeqa",
+    "license": "apache-2.0 (dataset card)",
+    "splits": {
+        "dev": [
+            (
+                "validation-00000-of-00003.parquet",
+                "5bd4cfb854ec4c22b98583fa4b6b16f5e6f7461d8bfc13cfe8e7eb12b30871d0",
+            ),
+            (
+                "validation-00001-of-00003.parquet",
+                "2f0728b3f819c1ccf67a1d0e1c37bfe8523063a46a5742275770d3db2c2ed799",
+            ),
+            (
+                "validation-00002-of-00003.parquet",
+                "3f6da16ec6688f788947023d84408bb7af71de7fd379d86b4ea517c42297d39b",
+            ),
+        ],
+    },
+    "expected": {"dev": {"documents": 115, "questions": 3461}},
+}
+NQA_CONVERT = (
+    "uv run --isolated --no-project --with pyarrow python "
+    "scripts/narrativeqa_parquet_to_jsonl.py --split {hf} --raw-dir {raw}"
+)
 
 
 class DatasetError(RuntimeError):
@@ -254,9 +287,93 @@ def make_subset(
     return out
 
 
+def fetch_narrativeqa(split: str, root: Path | None = None, force: bool = False) -> Path:
+    rdir = raw_dir("narrativeqa", NQA_VERSION, root)
+    for name, sha in NQA_SOURCES["splits"][split]:
+        dest = rdir / name
+        if force or not dest.is_file() or sha256_file(dest) != sha:
+            _download(f"{NQA_BASE}/{name}", dest, sha)
+        else:
+            print(f"  cached  {dest}")
+    return rdir
+
+
+def preprocess_narrativeqa(split: str, root: Path | None = None) -> Path:
+    """Raw JSONL (from the parquet converter) -> processed records + meta.jsonl."""
+    rdir = raw_dir("narrativeqa", NQA_VERSION, root)
+    hf = narrativeqa.SPLITS[split]
+    try:
+        raw_docs, raw_qs = narrativeqa.read_raw(rdir, hf)
+    except FileNotFoundError as exc:
+        raise DatasetError(
+            f"{exc} is missing. Convert the parquet shards first:\n  "
+            + NQA_CONVERT.format(hf=hf, raw=rdir)
+        ) from exc
+    docs, qs, metas, stats = narrativeqa.parse_split(raw_docs, raw_qs)
+    exp = NQA_SOURCES["expected"].get(split)
+    if exp and (len(docs), len(qs)) != (exp["documents"], exp["questions"]):
+        raise DatasetError(f"{split}: {len(docs)} docs / {len(qs)} questions, expected {exp}")
+    pdir = processed_dir("narrativeqa", NQA_VERSION, root)
+    dpath, qpath = qasper.processed_split_paths(pdir, split)
+    qasper.write_jsonl(dpath, (d.to_dict() for d in docs))
+    qasper.write_jsonl(qpath, (q.to_dict() for q in qs))
+    qasper.write_jsonl(pdir / split / "meta.jsonl", metas)
+    mpath = pdir / "manifest.json"
+    manifest = json.loads(mpath.read_text()) if mpath.is_file() else {}
+    manifest.update(
+        {
+            "dataset": "narrativeqa",
+            "version": NQA_VERSION,
+            "revision": NQA_REVISION,
+            "homepage": NQA_SOURCES["homepage"],
+            "license": NQA_SOURCES["license"],
+            "preprocess_version": narrativeqa.PREPROCESS_VERSION,
+            "preprocessing": "see adaptive_raptor/data/narrativeqa.py docstring",
+        }
+    )
+    manifest.setdefault("raw_sha256", {})
+    for name, sha in NQA_SOURCES["splits"][split]:
+        manifest["raw_sha256"][f"{NQA_BASE}/{name}"] = sha
+    manifest.setdefault("sources", [])
+    manifest["sources"] = sorted(set(manifest["sources"]) | set(manifest["raw_sha256"]))
+    manifest.setdefault("splits", {})[split] = {
+        "documents": len(docs),
+        "questions": len(qs),
+        **stats,
+        "created_at": datetime.now(UTC).isoformat(),
+        "files": {
+            "documents.jsonl": sha256_file(dpath),
+            "questions.jsonl": sha256_file(qpath),
+        },
+    }
+    mpath.write_text(json.dumps(manifest, indent=2) + "\n")
+    print(f"  {split}: {len(docs)} documents, {len(qs)} questions, {stats}")
+    return pdir
+
+
+def make_subset_narrativeqa(
+    name: str, split: str, n_docs: int, seed: int, root: Path | None = None
+) -> Path:
+    """Seeded subset stratified by kind (books / movie scripts): n_docs // 2 of each."""
+    pdir = processed_dir("narrativeqa", NQA_VERSION, root)
+    metas = narrativeqa.load_meta(pdir, split)
+    chosen: list[str] = []
+    kinds = sorted({m["kind"] for m in metas})
+    for i, kind in enumerate(kinds):
+        n = n_docs // len(kinds) + (1 if i < n_docs % len(kinds) else 0)
+        chosen += sample_doc_ids([m["doc_id"] for m in metas if m["kind"] == kind], n, seed)
+    out = data_root(root) / "subsets" / "narrativeqa" / NQA_VERSION / f"{split}_{name}.txt"
+    header = (
+        f"narrativeqa {NQA_VERSION} {split} subset '{name}': n_docs={n_docs} seed={seed}, "
+        f"stratified by kind {kinds}"
+    )
+    write_id_file(out, sorted(chosen), header)
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="adaptive_raptor.data.download", description=__doc__)
-    p.add_argument("--dataset", required=True, choices=["qasper", "quality"])
+    p.add_argument("--dataset", required=True, choices=["qasper", "quality", "narrativeqa"])
     p.add_argument("--data-dir", type=Path, default=None, help="data root (default: ./data)")
     p.add_argument("--verify", action="store_true", help="offline integrity check only")
     p.add_argument("--force", action="store_true", help="re-download and re-process")
@@ -271,6 +388,24 @@ def main(argv: list[str] | None = None) -> int:
         print("QuALITY is not supported yet (backlog T16).", file=sys.stderr)
         return 2
     root = args.data_dir
+    if args.dataset == "narrativeqa":
+        try:
+            if args.split not in NQA_SOURCES["splits"]:
+                p.error(f"narrativeqa: only {sorted(NQA_SOURCES['splits'])} are configured")
+            if args.make_subset:
+                if args.n_docs is None:
+                    p.error("--make-subset requires --n-docs")
+                out = make_subset_narrativeqa(
+                    args.make_subset, args.split, args.n_docs, args.seed, root
+                )
+                print(f"wrote {out}")
+                return 0
+            fetch_narrativeqa(args.split, root, force=args.force)
+            print(f"done: {preprocess_narrativeqa(args.split, root)}")
+            return 0
+        except (DatasetError, OSError) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
     try:
         if args.verify:
             problems = verify_qasper(root)
@@ -284,7 +419,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.make_subset:
             if args.n_docs is None:
                 p.error("--make-subset requires --n-docs")
-            out = make_subset(args.make_subset, args.split, args.n_docs, args.seed, root, args.exclude)
+            out = make_subset(
+                args.make_subset, args.split, args.n_docs, args.seed, root, args.exclude
+            )
             print(f"wrote {out}")
             return 0
         print(f"QASPER -> {data_root(root)}")

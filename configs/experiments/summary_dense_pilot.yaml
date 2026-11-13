@@ -1,0 +1,41 @@
+# Summary-prompt pilot (dev_pilot: 30 papers, 87 questions): evidence_dense_v1 summary prompt
+# (~150 words, complete, evidence-preserving) with cap 512 as a safety limit. Compared against
+# the cap-200 pilot (outputs/pilot_catalog/20261109T195138Z) and the cap-512 upstream-prompt
+# pilot (outputs/summary_cap512_pilot/20261110T040139Z) on the same 87 questions.
+# Leaf answers come from the response cache (leaf nodes do not depend on summaries).
+# COSTS MONEY (~$0.15-0.25):
+#   uv run python -m adaptive_raptor.run --config configs/experiments/summary_dense_pilot.yaml
+experiment:
+  name: summary_dense_pilot
+  type: raptor_baseline
+  run_label: A
+  description: "Summary-prompt pilot: evidence_dense_v1 prompt, cap 512 safety limit, dev_pilot."
+
+dataset:
+  name: qasper
+  split: dev
+  doc_ids_file: data/subsets/qasper/v0.3/dev_pilot.txt
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+raptor:
+  summarization_length: 512          # safety cap only
+  summarization_prompt: evidence_dense_v1   # the change: concise (~150 words), complete, evidence-preserving
+
+retrieval:
+  include_raptor_original: true
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [1000, 2000]              # caps on retrieved context; actual tokens are recorded
+
+generation:
+  price_input_per_mtok: 0.15
+  price_output_per_mtok: 0.60
+
+evaluation:
+  save_contexts: false
+  output_formats: [csv, json]
+
+runtime:
+  concurrency: 8

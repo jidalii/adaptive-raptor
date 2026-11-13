@@ -1,0 +1,45 @@
+# Summary-cap ablation, treatment arm: identical to labels_dev except raptor.summarization_length
+# 200 -> 512 (and only the 1000/2000 budgets). The control arm is the existing labels_dev run
+# (cap 200). Leaf nodes and leaf embeddings do not depend on the cap, so leaf_only answers are
+# expected to be served from the response cache (verified by analyze_summary_cap.py).
+# COSTS MONEY (new indexes: RAPTOR summaries; answers for collapsed/summary_only/original).
+# Pilot first (30 papers, 87 questions):
+#   uv run python -m adaptive_raptor.run --config configs/experiments/summary_cap512_dev.yaml \
+#     --set dataset.doc_ids_file=data/subsets/qasper/v0.3/dev_pilot.txt \
+#     --set experiment.name=summary_cap512_pilot
+# Full dev_rest (251 papers, 918 questions):
+#   uv run python -m adaptive_raptor.run --config configs/experiments/summary_cap512_dev.yaml
+# Analysis (offline): uv run python scripts/analyze_summary_cap.py --help
+experiment:
+  name: summary_cap512_dev
+  type: raptor_baseline
+  run_label: A
+  description: "Summary-cap ablation: dev_rest, summarization_length 512 (control: labels_dev, 200)."
+
+dataset:
+  name: qasper
+  split: dev
+  doc_ids_file: data/subsets/qasper/v0.3/dev_rest.txt
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+raptor:
+  summarization_length: 512          # the only index change (control arm: 200)
+
+retrieval:
+  include_raptor_original: true
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [1000, 2000]              # caps on retrieved context; actual tokens are recorded
+
+generation:
+  price_input_per_mtok: 0.15
+  price_output_per_mtok: 0.60
+
+evaluation:
+  save_contexts: false
+  output_formats: [csv, json]
+
+runtime:
+  concurrency: 8

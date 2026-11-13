@@ -32,3 +32,9 @@ Every "decide in the pilot" from the proposal gets decided here, on documents th
 - Spend so far (Nov 6), to copy into the Spend log: first real baseline, 2 papers (18 summary + 8 answer calls, about 22.5k input / 2.8k output tokens, about $0.005; results invalid because summaries were empty), plus one integration-test call (under $0.001).
 
 - A `pilot` experiment type may be cleaner than reusing `raptor_baseline`. Add it to the schema and registry if needed.
+- **Nov 9: pilot run with budgets 400/1000/2000, ε 0.02, summary cap 200.** Results are in `NOTES.md`.
+  - 400 is practical.
+  - **94% of summaries still hit the 200 cap.** Reported; awaiting a decision before label collection.
+  - Cross-fit oracle gap is +8.6 F1 at about 1,000 tokens and +3.1 at 2,000.
+  - The seed-variance check is deferred.
+

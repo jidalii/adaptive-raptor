@@ -25,4 +25,15 @@ Every later number is computed from these records: what was asked, which config,
 
 - Nov 6: `answer_f1` matches the official `qasper_evaluator.py` on the real dev set (integration test, three prediction sets). Traces, `LabelStore` and `from_traces` done.
 - Restarts already cost nothing (the generation and summary caches), but each run writes a new run directory, so merging label tables across runs still needs deduplication by (question, variant, seed, config, run).
-- **Left:** `acceptability_labels` (stub in `profiling.py`), `evidence_recall` (stub), and the dedup/merge step.
+- Nov 9 (`profiling.py`):
+  - **`acceptability_labels(records, epsilon, configs=None, report=...)`**
+    - Records must come from one (variant, seed, run) cell; `select_records` filters to one.
+    - All-fail queries map to `None`. Queries missing a config are excluded and listed in `LabelReport.incomplete`.
+    - The report gives per-config acceptable rates and per-answer-type counts.
+  - **`merge_label_tables(paths)`**
+    - Deduplicates by (question, variant, seed, config, run); the first row wins.
+    - A differing F1 is reported as a conflict, never averaged.
+  - Tests are in `tests/test_labels_and_research.py`.
+  - **Live check passed:** 1 pilot paper × 9 configs × runs A/B = 54 rows (18 × 3 questions). A rerun of A made 0 new calls, and the merge gave 81 → 54 rows with 0 conflicts.
+  - **Done.**
+- `evidence_recall` stays a stub. Its definition (how a summary is "credited only for evidence it contains") is a research choice for the E6 diagnostics, so it moves to **T14**.

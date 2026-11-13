@@ -1,0 +1,42 @@
+# Summary-prompt evaluation on full dev_rest (251 papers, 918 questions), approved 2026-11-10.
+# Identical to summary_cap512_dev except raptor.summarization_prompt = evidence_dense_v1
+# (~150 words, complete, evidence-preserving; cap 512 is a safety limit only).
+# Control arm: labels_dev (cap 200, upstream prompt), outputs/labels_dev/20261109T195548Z.
+# Leaf answers are served from the response cache (leaf nodes do not depend on summaries).
+# Pre-registered endpoints: see NOTES.md "Pre-registration: summary_dense_dev".
+# COSTS MONEY (~$1.4-1.8 off-peak):
+#   uv run python -m adaptive_raptor.run --config configs/experiments/summary_dense_dev.yaml
+experiment:
+  name: summary_dense_dev
+  type: raptor_baseline
+  run_label: A
+  description: "Summary-prompt evaluation: evidence_dense_v1 prompt, cap 512 safety limit, dev_rest."
+
+dataset:
+  name: qasper
+  split: dev
+  doc_ids_file: data/subsets/qasper/v0.3/dev_rest.txt
+
+chunking:
+  variants:
+    - {name: f100, method: fixed, chunk_size: 100}
+
+raptor:
+  summarization_length: 512          # safety cap only
+  summarization_prompt: evidence_dense_v1   # the change vs the cap-200 control
+
+retrieval:
+  include_raptor_original: true
+  strategies: [leaf_only, summary_only, collapsed]
+  budgets: [1000, 2000]
+
+generation:
+  price_input_per_mtok: 0.15
+  price_output_per_mtok: 0.60
+
+evaluation:
+  save_contexts: false
+  output_formats: [csv, json]
+
+runtime:
+  concurrency: 8

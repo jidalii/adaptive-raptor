@@ -18,7 +18,7 @@ from typing import Any
 
 from adaptive_raptor.cache import stable_hash
 
-INDEX_FORMAT_VERSION = 1
+INDEX_FORMAT_VERSION = 2  # 2: summaries made with thinking disabled (T03 fix)
 UPSTREAM_RAPTOR_COMMIT = "7da1d48a7e1d7dec61a63c9d9aae84e2dfaa5767"
 EMB_KEY = "EMB"  # embedding key used for every node and for retrieval
 
